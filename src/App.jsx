@@ -15,6 +15,10 @@ import DemoCenter from "@/pages/demo-center";
 import SuccessStories from "@/pages/success-stories";
 import Settings from "@/pages/settings";
 import EarnixResources from "@/pages/earnix-resources";
+import AiPlatforms from "@/pages/ai-platforms";
+import Partnerships from "@/pages/partnerships";
+import Collaboration from "@/pages/collaboration";
+import Team from "@/pages/team";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +34,10 @@ function Router() {
       <Route path="/success-stories" component={SuccessStories} />
       <Route path="/settings" component={Settings} />
       <Route path="/earnix-resources" component={EarnixResources} />
+      <Route path="/ai-platforms" component={AiPlatforms} />
+      <Route path="/partnerships" component={Partnerships} />
+      <Route path="/collaboration" component={Collaboration} />
+      <Route path="/team" component={Team} />
       <Route component={NotFound} />
     </Switch>
   );

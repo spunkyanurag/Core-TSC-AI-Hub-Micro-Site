@@ -27,14 +27,14 @@ const IconMark = "/assets/favicon-mark.png";
 
 const NAV_ITEMS = [
   { path: "/",                label: "Executive Dashboard",      icon: LayoutDashboard },
-  { path: null,               label: "AI for Core Platforms",    icon: BotMessageSquare },
+  { path: "/ai-platforms",    label: "AI for Core Platforms",    icon: BotMessageSquare },
   { path: "/competencies",    label: "Competency Center",        icon: Layers },
   { path: "/innovation",      label: "Innovation Lab",           icon: Lightbulb },
   { path: "/demo-center",     label: "Demo Center",              icon: PlaySquare },
   { path: "/success-stories", label: "Success Stories",          icon: Trophy },
-  { path: null,               label: "Partnerships & Marketplace", icon: Handshake },
-  { path: null,               label: "Collaboration Hub",        icon: Globe },
-  { path: null,               label: "Team & Capability",        icon: Users },
+  { path: "/partnerships",    label: "Partnerships & Marketplace", icon: Handshake },
+  { path: "/collaboration",  label: "Collaboration Hub",        icon: Globe },
+  { path: "/team",           label: "Team & Capability",        icon: Users },
 ];
 
 export function Layout({ children }) {
