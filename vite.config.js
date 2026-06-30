@@ -18,9 +18,10 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 5173,
+    port: 5000,
     host: true,
-    open: true,
+    open: false,
+    allowedHosts: true,
   },
   preview: {
     port: 4173,
