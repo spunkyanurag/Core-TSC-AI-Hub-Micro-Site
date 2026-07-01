@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowLeft, FileText, NotebookText, PlaySquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ const earnixResources = [
   {
     title: "Demo",
     description: "Launch the Earnix product demo and walkthrough.",
-    href: "https://vmivsp.sharepoint.com/sites/CoreLeverage/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FCoreLeverage%2FShared%20Documents%2FGeneral%2FTraining%2FEarnix%2FDemo&viewid=e2080b0c%2Df3a8%2D437b%2Da657%2D7ee3ad648a5d&CID=c3a2c27b%2Dfc0a%2Dfd86%2D6a23%2D1db143cfa62a&sharingv2=true&fromShare=true&at=9&FolderCTID=0x012000590E2BA52A0EB742A691C13C41D38C2E&ovuser=13085c86%2D4bcb%2D460a%2Da6f0%2Db373421c6323%2CSampath%2EPolisetty%40valuemomentum%2Ecom&OR=Teams%2DHL&CT=1771821426188&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjAxMTUxMTExOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D",
+    route: "/earnix-demos",
     icon: PlaySquare,
   },
   {
@@ -27,8 +27,19 @@ const earnixResources = [
 ];
 
 export default function EarnixResources() {
+  const [, setLocation] = useLocation();
+
   const openResource = (href) => {
     window.open(href, "_blank", "noopener,noreferrer");
+  };
+
+  const handleResourceClick = (resource) => {
+    if (resource.route) {
+      setLocation(resource.route);
+      return;
+    }
+
+    openResource(resource.href);
   };
 
   return (
@@ -64,7 +75,7 @@ export default function EarnixResources() {
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <Card
-                onClick={() => openResource(resource.href)}
+                onClick={() => handleResourceClick(resource)}
                 className="h-full cursor-pointer border-border/50 transition-all hover:-translate-y-1 hover:border-[#056BFC]/40 hover:shadow-lg"
               >
                 <CardHeader className="pb-4">

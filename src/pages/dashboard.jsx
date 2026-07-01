@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { kpis, platformCoverage, chartData, activities } from "@/mock-data";
+import { ROLES, useAuth } from "@/auth";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -67,6 +68,11 @@ const fadeLeft = {
 
 export default function Dashboard() {
   const COLORS = ["#056BFC", "#3FD534", "#FABD00", "#60a5fa", "#16a34a"];
+  const { hasRole } = useAuth();
+  const canViewManagementModules = hasRole([
+    ROLES.ADMINISTRATOR,
+    ROLES.COMPETENCY_OWNER,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -223,6 +229,8 @@ export default function Dashboard() {
         </div>
       </motion.section>
 
+      {canViewManagementModules && (
+        <>
       {/* ── KPI CARDS ─────────────────────────────────────────── */}
       <motion.div
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
@@ -445,6 +453,8 @@ export default function Dashboard() {
           </Card>
         </motion.div>
       </div>
+        </>
+      )}
     </div>
   );
 }

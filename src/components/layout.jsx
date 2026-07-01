@@ -1,26 +1,38 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { 
-  LayoutDashboard, 
-  Layers, 
-  Lightbulb, 
-  PlaySquare, 
-  Trophy, 
+import {
+  LayoutDashboard,
+  Layers,
+  Lightbulb,
+  PlaySquare,
+  Trophy,
   BotMessageSquare,
   Handshake,
   Globe,
   Users,
-  Search, 
-  Bell, 
-  Moon, 
+  Search,
+  Bell,
+  Moon,
   Sun,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LogOut,
+  ShieldCheck,
+  UserCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
+import { PERMISSIONS, useAuth } from "@/auth";
 const LogoDark = "/assets/logo-dark.png";
 const LogoLight = "/assets/logo-light.png";
 const IconMark = "/assets/favicon-mark.png";
@@ -35,14 +47,48 @@ const NAV_ITEMS = [
   { path: "/partnerships",    label: "Partnerships & Marketplace", icon: Handshake },
   { path: "/collaboration",  label: "Collaboration Hub",        icon: Globe },
   { path: "/team",           label: "Team & Capability",        icon: Users },
+  {
+    path: "/user-management",
+    label: "User Management",
+    icon: UserCog,
+    requiredPermissions: [PERMISSIONS.MANAGE_USERS],
+  },
 ];
 
+const ROUTE_LABELS = {
+  "/earnix-resources": "Earnix Resources",
+  "/earnix-demos": "Earnix Demo Library",
+  "/user-management": "User Management",
+  "/unauthorized": "Unauthorized",
+};
+
+function getInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function Layout({ children }) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { hasPermissions, logout, user } = useAuth();
   
-  const currentNav = NAV_ITEMS.find((item) => item.path === location) || NAV_ITEMS[0];
+  const visibleNavItems = NAV_ITEMS.filter((item) =>
+    hasPermissions(item.requiredPermissions || [])
+  );
+  const currentNav = NAV_ITEMS.find((item) => item.path === location) || {
+    label: ROUTE_LABELS[location] || NAV_ITEMS[0].label,
+  };
+
+  async function handleLogout() {
+    await logout();
+    navigate("/login", { replace: true });
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#F8F8FB] dark:bg-background overflow-hidden">
@@ -62,7 +108,7 @@ export function Layout({ children }) {
         </div>
         
         <nav className="flex-1 overflow-y-auto py-4 space-y-1 px-3">
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location === item.path;
             const isDisabled = item.path === null;
             const Icon = item.icon;
@@ -150,10 +196,42 @@ export function Layout({ children }) {
             
             <div className="h-8 w-px bg-border mx-2"></div>
             
-            <Avatar className="h-8 w-8 cursor-pointer ring-2 ring-[#056BFC]/20 ring-offset-2 ring-offset-background">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CX</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-10 gap-3 px-2">
+                  <Avatar className="h-8 w-8 ring-2 ring-[#056BFC]/20 ring-offset-2 ring-offset-background">
+                    <AvatarImage src={user?.avatarUrl} alt={user?.name} />
+                    <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden max-w-36 truncate text-sm font-medium text-[#303030] dark:text-white lg:inline">
+                    {user?.name}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <DropdownMenuLabel>
+                  <div className="space-y-1">
+                    <p className="truncate text-sm font-semibold">{user?.name}</p>
+                    <p className="truncate text-xs font-normal text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+                    <ShieldCheck className="h-3.5 w-3.5 text-[#056BFC]" />
+                    Role
+                  </div>
+                  <p>{user?.roles?.join(", ")}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
