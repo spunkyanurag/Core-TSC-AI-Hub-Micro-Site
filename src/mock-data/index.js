@@ -89,6 +89,47 @@ export const activities = [
   { id: "5", action: "Started innovation initiative", target: "Predictive Claims Analytics", time: "3 days ago" },
 ];
 
+// Dashboard announcements are kept here so the carousel can be updated
+// independently of its presentation.
+export const latestUpdates = [
+  {
+    id: "genai-underwriting",
+    eyebrow: "POC Spotlight",
+    date: "05 Jun 2026",
+    title: "GenAI underwriting assistant moves into active validation",
+    description:
+      "The new proof of concept brings contextual risk summaries and guided decision support directly into the underwriting workflow.",
+    cta: "See the POC",
+    href: "/poc-showcase",
+    accent: "#3FD534",
+    secondaryAccent: "#FABD00",
+  },
+  {
+    id: "earnix-demo-library",
+    eyebrow: "New Resource",
+    date: "28 May 2026",
+    title: "Earnix demo library is now open to the Core TSC",
+    description:
+      "Explore focused product walkthroughs, implementation patterns, and reusable material for your next pricing transformation conversation.",
+    cta: "Browse demos",
+    href: "/earnix-demos",
+    accent: "#FABD00",
+    secondaryAccent: "#3FD534",
+  },
+  {
+    id: "cloud-accelerator",
+    eyebrow: "Asset Release",
+    date: "20 May 2026",
+    title: "Cloud migration accelerator added to the asset catalog",
+    description:
+      "A practical toolkit for discovery, migration planning, and delivery governance is now ready for teams working on Guidewire cloud programs.",
+    cta: "View assets",
+    href: "/assets",
+    accent: "#60A5FA",
+    secondaryAccent: "#FABD00",
+  },
+];
+
 export const chartData = {
   coverageTrend: [
     { month: "Jan", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },

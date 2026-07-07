@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { kpis, platformCoverage, chartData, activities } from "@/mock-data";
+import { kpis, platformCoverage, chartData, activities, latestUpdates } from "@/mock-data";
 import { ROLES, useAuth } from "@/auth";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { ArrowUpRight, Target, Box, FlaskConical, Cpu, Cable, Sparkles, Layers } from "lucide-react";
+import {
+  ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play,
+  Target, Box, FlaskConical, Cpu, Cable, Sparkles, Layers,
+} from "lucide-react";
 
 /* ── animated counter ───────────────────────────────────────── */
 function Counter({ to, duration = 1400, suffix = "" }) {
@@ -66,6 +70,201 @@ const fadeLeft = {
   show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
+function UpdateArtwork({ update }) {
+  return (
+    <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[43%] overflow-hidden md:block" aria-hidden="true">
+      <div className="absolute inset-0 bg-[#101f5a]/35 [clip-path:polygon(38%_0,100%_0,100%_100%,0_100%)]" />
+      <motion.div
+        className="absolute -right-12 top-1/2 h-[340px] w-[340px] -translate-y-1/2 rounded-full border border-white/15"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+      >
+        <div className="absolute inset-14 rounded-full border border-white/10" />
+      </motion.div>
+      <motion.div
+        className="absolute left-[35%] top-1/2 grid h-40 w-40 -translate-y-1/2 place-items-center rounded-[2.5rem] border border-white/20 bg-white/10 shadow-2xl backdrop-blur-md"
+        animate={{ y: [-4, 5, -4], rotate: [-1, 1, -1] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <div className="grid h-[118px] w-[118px] place-items-center rounded-[2rem] border border-white/10">
+          <Sparkles className="h-14 w-14 text-white" strokeWidth={1.7} />
+        </div>
+      </motion.div>
+      <motion.span
+        className="absolute left-[31%] top-[24%] h-8 w-8 rounded-xl"
+        style={{ backgroundColor: update.accent }}
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.span
+        className="absolute bottom-[22%] right-[18%] h-12 w-12 rounded-full"
+        style={{ backgroundColor: update.secondaryAccent }}
+        animate={{ scale: [1, 1.1, 1] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
+  );
+}
+
+function LatestUpdates() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const total = latestUpdates.length;
+  const update = latestUpdates[activeIndex];
+
+  const showSlide = (nextIndex, nextDirection) => {
+    setDirection(nextDirection);
+    setActiveIndex((nextIndex + total) % total);
+  };
+
+  useEffect(() => {
+    if (isPaused || isInteracting || reduceMotion || total < 2) return undefined;
+    const timer = window.setTimeout(() => {
+      setDirection(1);
+      setActiveIndex((current) => (current + 1) % total);
+    }, 6000);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, isPaused, isInteracting, reduceMotion, total]);
+
+  const slideVariants = {
+    enter: (slideDirection) => ({ opacity: 0, x: slideDirection * 72 }),
+    center: { opacity: 1, x: 0 },
+    exit: (slideDirection) => ({ opacity: 0, x: slideDirection * -72 }),
+  };
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55 }}
+      aria-labelledby="latest-updates-title"
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onFocusCapture={() => setIsInteracting(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsInteracting(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft") showSlide(activeIndex - 1, -1);
+        if (event.key === "ArrowRight") showSlide(activeIndex + 1, 1);
+      }}
+      className="space-y-4"
+    >
+      <div className="flex items-end justify-between gap-4 px-1">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[#056BFC]">
+            <span className="h-px w-8 bg-[#056BFC]" />
+            What&apos;s new
+          </div>
+          <h2 id="latest-updates-title" className="text-2xl font-bold tracking-tight text-foreground">
+            Latest updates
+          </h2>
+        </div>
+        <Link
+          href="/innovation"
+          className="group mb-1 inline-flex items-center gap-2 text-sm font-semibold text-[#056BFC] hover:underline"
+        >
+          See all
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Link>
+      </div>
+
+      <div
+        className="relative min-h-[360px] overflow-hidden rounded-[1.85rem] bg-gradient-to-br from-[#6345cf] via-[#353f9c] to-[#101e56] shadow-[0_28px_70px_rgba(20,36,92,0.22)] md:min-h-[410px]"
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Latest Core TSC updates"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.11),transparent_36%)]" />
+        <UpdateArtwork update={update} />
+
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.article
+            key={update.id}
+            custom={direction}
+            variants={slideVariants}
+            initial={reduceMotion ? false : "enter"}
+            animate="center"
+            exit={reduceMotion ? undefined : "exit"}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 flex min-h-[360px] w-full flex-col justify-center px-7 py-10 text-white sm:px-12 md:min-h-[410px] md:w-[64%] md:px-14"
+            aria-roledescription="slide"
+            aria-label={`${activeIndex + 1} of ${total}`}
+          >
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
+                {update.eyebrow}
+              </span>
+              <time className="text-sm font-medium text-white/70">{update.date}</time>
+            </div>
+            <h3 className="max-w-3xl text-3xl font-bold leading-[1.06] tracking-[-0.035em] sm:text-4xl lg:text-[2.75rem]">
+              {update.title}
+            </h3>
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
+              {update.description}
+            </p>
+            <div className="mt-8">
+              <Link
+                href={update.href}
+                className="group inline-flex min-h-11 items-center gap-4 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#111936] shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#353f9c]"
+              >
+                {update.cta}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </motion.article>
+        </AnimatePresence>
+      </div>
+
+      {total > 1 && (
+        <div className="flex items-center justify-center gap-3" aria-label="Carousel controls">
+          <button
+            type="button"
+            onClick={() => setIsPaused((current) => !current)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC]"
+            aria-label={isPaused ? "Play updates" : "Pause updates"}
+          >
+            {isPaused ? <Play className="h-4 w-4 fill-current" /> : <Pause className="h-4 w-4 fill-current" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => showSlide(activeIndex - 1, -1)}
+            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC]"
+            aria-label="Previous update"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            {latestUpdates.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => showSlide(index, index >= activeIndex ? 1 : -1)}
+                className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC] focus-visible:ring-offset-2 ${
+                  index === activeIndex ? "w-8 bg-[#056BFC]" : "w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600"
+                }`}
+                aria-label={`Show update ${index + 1}: ${item.title}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => showSlide(activeIndex + 1, 1)}
+            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC]"
+            aria-label="Next update"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+    </motion.section>
+  );
+}
+
 export default function Dashboard() {
   const COLORS = ["#056BFC", "#3FD534", "#FABD00", "#60a5fa", "#16a34a"];
   const { hasRole } = useAuth();
@@ -77,7 +276,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
 
+      <LatestUpdates />
+
       {/* ── HERO ─────────────────────────────────────────────── */}
+      {false && (
       <motion.section
         initial={{ opacity: 0, y: -32 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,6 +430,7 @@ export default function Dashboard() {
           </motion.div>
         </div>
       </motion.section>
+      )}
 
       {canViewManagementModules && (
         <>
