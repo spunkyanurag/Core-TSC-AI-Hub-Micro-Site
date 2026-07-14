@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
@@ -12,8 +12,10 @@ import {
   Users,
   Search,
   Bell,
+  Menu,
   Moon,
   Sun,
+  X,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -75,6 +77,7 @@ function getInitials(name = "") {
 export function Layout({ children }) {
   const [location, navigate] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const { hasPermissions, logout, user } = useAuth();
   
@@ -90,13 +93,89 @@ export function Layout({ children }) {
     navigate("/login", { replace: true });
   }
 
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location]);
+
+  function renderNavItems({ isMobile = false } = {}) {
+    return visibleNavItems.map((item) => {
+      const isActive = location === item.path;
+      const isDisabled = item.path === null;
+      const Icon = item.icon;
+      const showLabel = isMobile || !isCollapsed;
+
+      const inner = (
+        <div
+          className={`flex items-center ${
+            !isMobile && isCollapsed ? "justify-center px-0" : "px-3"
+          } py-2.5 rounded-md transition-colors group ${
+            isDisabled
+              ? "opacity-40 cursor-not-allowed"
+              : isActive
+              ? "bg-[#056BFC] text-white cursor-pointer"
+              : "text-gray-300 hover:bg-[#383838] hover:text-white cursor-pointer"
+          }`}
+        >
+          <Icon
+            className={`h-5 w-5 flex-shrink-0 ${
+              isActive ? "text-white" : "text-gray-300 group-hover:text-white"
+            }`}
+          />
+          {showLabel && (
+            <span className="ml-3 min-w-0 truncate text-sm font-medium">
+              {item.label}
+            </span>
+          )}
+        </div>
+      );
+
+      return isDisabled ? (
+        <div key={item.label}>{inner}</div>
+      ) : (
+        <Link key={item.path} href={item.path} className="block">
+          {inner}
+        </Link>
+      );
+    });
+  }
+
   return (
-    <div className="flex h-screen w-full bg-[#F8F8FB] dark:bg-background overflow-hidden">
-      {/* Sidebar */}
+    <div className="flex min-h-screen w-full bg-[#F8F8FB] dark:bg-background md:h-screen md:overflow-hidden">
+      {isMobileNavOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-40 bg-black/45 md:hidden"
+          onClick={() => setIsMobileNavOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[#222222] bg-[#303030] transition-transform duration-300 md:hidden ${
+          isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-16 items-center justify-between border-b border-[#222222] bg-[#252525] px-4">
+          <img src={LogoDark} alt="ValueMomentum" className="h-8 object-contain" />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Close navigation"
+            className="text-gray-300 hover:bg-[#383838] hover:text-white"
+            onClick={() => setIsMobileNavOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          {renderNavItems({ isMobile: true })}
+        </nav>
+      </aside>
+
       <aside 
         className={`${
           isCollapsed ? "w-20" : "w-64"
-        } flex-shrink-0 bg-[#303030] border-r border-[#222222] transition-all duration-300 flex flex-col z-20`}
+        } z-20 hidden flex-shrink-0 flex-col border-r border-[#222222] bg-[#303030] transition-all duration-300 md:flex`}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#222222] bg-[#252525]">
           {!isCollapsed && (
@@ -108,44 +187,7 @@ export function Layout({ children }) {
         </div>
         
         <nav className="flex-1 overflow-y-auto py-4 space-y-1 px-3">
-          {visibleNavItems.map((item) => {
-            const isActive = location === item.path;
-            const isDisabled = item.path === null;
-            const Icon = item.icon;
-
-            const inner = (
-              <div
-                className={`flex items-center ${
-                  isCollapsed ? "justify-center px-0" : "px-3"
-                } py-2.5 rounded-md transition-colors group ${
-                  isDisabled
-                    ? "opacity-40 cursor-not-allowed"
-                    : isActive
-                    ? "bg-[#056BFC] text-white cursor-pointer"
-                    : "text-gray-300 hover:bg-[#383838] hover:text-white cursor-pointer"
-                }`}
-              >
-                <Icon
-                  className={`h-5 w-5 flex-shrink-0 ${
-                    isActive ? "text-white" : "text-gray-300 group-hover:text-white"
-                  }`}
-                />
-                {!isCollapsed && (
-                  <span className="ml-3 text-sm font-medium whitespace-nowrap">
-                    {item.label}
-                  </span>
-                )}
-              </div>
-            );
-
-            return isDisabled ? (
-              <div key={item.label}>{inner}</div>
-            ) : (
-              <Link key={item.path} href={item.path} className="block">
-                {inner}
-              </Link>
-            );
-          })}
+          {renderNavItems()}
         </nav>
         
         <div className="p-4 border-t border-[#222222]">
@@ -161,16 +203,25 @@ export function Layout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <main className="relative flex min-h-screen min-w-0 flex-1 flex-col overflow-hidden md:min-h-0">
         {/* Header */}
-        <header className="h-16 bg-white dark:bg-card border-b border-border flex items-center justify-between px-6 z-10 shadow-sm">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold text-[#303030] dark:text-white">
+        <header className="min-h-16 bg-white dark:bg-card border-b border-border flex items-center justify-between gap-3 px-4 py-3 z-10 shadow-sm sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Open navigation"
+              className="md:hidden"
+              onClick={() => setIsMobileNavOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="truncate text-lg font-semibold text-[#303030] dark:text-white sm:text-xl">
               {currentNav?.label}
             </h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             <div className="relative w-64 hidden md:block">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
@@ -194,7 +245,7 @@ export function Layout({ children }) {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#FABD00]"></span>
             </Button>
             
-            <div className="h-8 w-px bg-border mx-2"></div>
+            <div className="hidden h-8 w-px bg-border sm:block"></div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -236,7 +287,7 @@ export function Layout({ children }) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             {children}
           </div>

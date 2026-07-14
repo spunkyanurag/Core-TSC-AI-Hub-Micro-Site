@@ -108,12 +108,12 @@ function getTitleForRole(role, competencies = []) {
 function StatCard({ icon: Icon, label, value, tone }) {
   return (
     <Card className="rounded-lg shadow-sm">
-      <CardContent className="flex items-center gap-5 p-6">
-        <div className={`flex h-14 w-14 items-center justify-center rounded-lg ${tone}`}>
-          <Icon className="h-7 w-7" />
+      <CardContent className="flex items-center gap-4 p-4 sm:gap-5 sm:p-6">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-lg sm:h-14 sm:w-14 ${tone}`}>
+          <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
         </div>
         <div>
-          <p className="text-3xl font-semibold text-[#303030] dark:text-white">{value}</p>
+          <p className="text-2xl font-semibold text-[#303030] dark:text-white sm:text-3xl">{value}</p>
           <p className="text-sm text-muted-foreground">{label}</p>
         </div>
       </CardContent>
@@ -127,7 +127,7 @@ export default function UserManagement() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [competencyFilter, setCompetencyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUserFormOpen, setIsUserFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState(getEmptyForm);
   const [formError, setFormError] = useState("");
@@ -168,7 +168,7 @@ export default function UserManagement() {
   }
 
   function closeUserForm() {
-    setIsDialogOpen(false);
+    setIsUserFormOpen(false);
     setEditingUser(null);
     setForm(getEmptyForm());
     setFormError("");
@@ -178,7 +178,7 @@ export default function UserManagement() {
     setEditingUser(null);
     setForm(getEmptyForm());
     setFormError("");
-    setIsDialogOpen(true);
+    setIsUserFormOpen(true);
   }
 
   function openEditDialog(user) {
@@ -195,7 +195,7 @@ export default function UserManagement() {
       isActive: user.isActive,
     });
     setFormError("");
-    setIsDialogOpen(true);
+    setIsUserFormOpen(true);
   }
 
   function updateForm(field, value) {
@@ -306,7 +306,7 @@ export default function UserManagement() {
     } catch (error) {
       setFormError(error.message);
       setEditingUser(user);
-      setIsDialogOpen(true);
+      setIsUserFormOpen(true);
     }
   }
 
@@ -317,14 +317,14 @@ export default function UserManagement() {
     } catch (error) {
       setFormError(error.message);
       setEditingUser(user);
-      setIsDialogOpen(true);
+      setIsUserFormOpen(true);
     }
   }
 
   return (
     <div className="space-y-8">
       <section className="space-y-1">
-        <h2 className="text-3xl font-semibold text-[#303030] dark:text-white">
+        <h2 className="text-2xl font-semibold text-[#303030] dark:text-white sm:text-3xl">
           User Management
         </h2>
         <p className="text-base text-muted-foreground">
@@ -388,14 +388,14 @@ export default function UserManagement() {
             <option value="inactive">Inactive</option>
           </select>
 
-          <Button type="button" className="h-11 px-5" onClick={openCreateDialog}>
+          <Button type="button" className="h-11 w-full px-5 lg:w-auto" onClick={openCreateDialog}>
             <Plus className="h-4 w-4" />
             Add User
           </Button>
         </div>
       </section>
 
-      {isDialogOpen && (
+      {isUserFormOpen && (
         <section className="rounded-lg border bg-card p-5 shadow-sm">
           <div className="mb-5">
             <h3 className="text-xl font-semibold text-[#303030] dark:text-white">
@@ -492,7 +492,84 @@ export default function UserManagement() {
         </section>
       )}
 
-      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <section className="grid gap-4 md:hidden">
+        {filteredUsers.map((user) => {
+          const primaryRole = user.roles[0];
+
+          return (
+            <article key={user.id} className="rounded-lg border bg-card p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#056BFC] text-sm font-semibold text-white">
+                  {getInitials(user.name)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-[#303030] dark:text-white">{user.name}</p>
+                  <p className="break-words text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 text-sm">
+                <div>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Department</p>
+                  <p className="font-medium text-[#303030] dark:text-white">{user.department}</p>
+                  <p className="text-muted-foreground">{user.title}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className={roleStyles[primaryRole]}>
+                    {primaryRole}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={user.isActive ? "border-[#23C842]/25 bg-[#23C842]/10 text-[#18772A]" : "border-muted bg-muted text-muted-foreground"}
+                  >
+                    {user.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Competencies</p>
+                  <p className="text-[#055FE0]">{getCompetencyLabel(user)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Joined</p>
+                  <p className="text-muted-foreground">{formatDate(user.joinedOn)}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-2">
+                <Button variant="outline" size="sm" aria-label={`Edit ${user.name}`} onClick={() => openEditDialog(user)} className="w-full">
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+                <Button variant="outline" size="sm" aria-label={user.isActive ? `Deactivate ${user.name}` : `Activate ${user.name}`} onClick={() => handleToggleActive(user)} className="w-full">
+                  {user.isActive ? (
+                    <>
+                      <UserX className="h-4 w-4" />
+                      Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 text-[#18772A]" />
+                      Activate
+                    </>
+                  )}
+                </Button>
+                <Button variant="outline" size="sm" className="w-full text-destructive" aria-label={`Delete ${user.name}`} onClick={() => handleDelete(user)}>
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </article>
+          );
+        })}
+
+        {!filteredUsers.length && (
+          <div className="rounded-lg border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
+            No users match the selected filters.
+          </div>
+        )}
+      </section>
+
+      <section className="hidden overflow-hidden rounded-lg border bg-card shadow-sm md:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] text-left">
             <thead className="border-b bg-muted/35 text-xs uppercase text-muted-foreground">
