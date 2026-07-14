@@ -12,6 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/auth";
+import { ContentAccessDenied } from "@/components/content-access-denied";
+import { CONTENT_ACCESS_ROLE, userCanViewContent } from "@/lib/content-access";
 
 const GENERAL_LIABILITY_DEMO_URL =
   "https://vmivsp.sharepoint.com/sites/CoreLeverage/_layouts/15/stream.aspx?id=%2Fsites%2FCoreLeverage%2FShared%20Documents%2FGeneral%2FTraining%2FEarnix%2FDemo%2FDemo%20General%20Liability%2Emp4&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E8f8ef3a8%2D9e47%2D4901%2Dbf7a%2D220ec3fbe2d8";
@@ -23,6 +26,7 @@ const earnixDemos = [
     icon: ShieldCheck,
     thumbnail: "from-[#056BFC] via-[#0EA5E9] to-[#0F172A]",
     videoUrl: GENERAL_LIABILITY_DEMO_URL,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "UW Demo",
@@ -30,6 +34,7 @@ const earnixDemos = [
     icon: FileSpreadsheet,
     thumbnail: "from-[#2563EB] via-[#3FD534] to-[#0F172A]",
     videoUrl: GENERAL_LIABILITY_DEMO_URL,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "Pricing Demo",
@@ -37,6 +42,7 @@ const earnixDemos = [
     icon: Calculator,
     thumbnail: "from-[#0F766E] via-[#14B8A6] to-[#0F172A]",
     videoUrl: GENERAL_LIABILITY_DEMO_URL,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "BOP Demo",
@@ -44,6 +50,7 @@ const earnixDemos = [
     icon: BriefcaseBusiness,
     thumbnail: "from-[#FABD00] via-[#F97316] to-[#303030]",
     videoUrl: GENERAL_LIABILITY_DEMO_URL,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "Portfolio Demo",
@@ -51,10 +58,17 @@ const earnixDemos = [
     icon: BarChart3,
     thumbnail: "from-[#7C3AED] via-[#2563EB] to-[#0F172A]",
     videoUrl: GENERAL_LIABILITY_DEMO_URL,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
 ];
 
 export default function EarnixDemos() {
+  const { user } = useAuth();
+
+  if (!userCanViewContent(user, CONTENT_ACCESS_ROLE.EARNIX)) {
+    return <ContentAccessDenied contentAccessRole={CONTENT_ACCESS_ROLE.EARNIX} />;
+  }
+
   const openDemo = (demo) => {
     window.open(demo.videoUrl, "_blank", "noopener,noreferrer");
   };

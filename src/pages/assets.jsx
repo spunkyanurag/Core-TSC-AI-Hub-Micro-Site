@@ -6,14 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { assets } from "@/mock-data";
+import { useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
 import { Search, Filter, Download, ArrowUpRight, Gauge, Zap } from "lucide-react";
 
 export default function Assets() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const visibleAssets = filterContentForUser(assets, user);
 
-  const filteredAssets = assets.filter(asset => {
+  const filteredAssets = visibleAssets.filter(asset => {
     const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           asset.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlatform = platformFilter === "all" || asset.platform === platformFilter;
@@ -22,8 +26,8 @@ export default function Assets() {
     return matchesSearch && matchesPlatform && matchesCategory;
   });
 
-  const platforms = Array.from(new Set(assets.map(a => a.platform)));
-  const categories = Array.from(new Set(assets.map(a => a.category)));
+  const platforms = Array.from(new Set(visibleAssets.map(a => a.platform)));
+  const categories = Array.from(new Set(visibleAssets.map(a => a.category)));
 
   return (
     <div className="space-y-6">
@@ -109,7 +113,7 @@ export default function Assets() {
         {filteredAssets.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground">
             <Filter className="w-12 h-12 mx-auto mb-4 opacity-20" />
-            <p className="text-lg">No assets found matching your criteria.</p>
+            <p className="text-lg">No assets found matching your access or filters.</p>
             <Button variant="link" onClick={() => {setSearchTerm(""); setPlatformFilter("all"); setCategoryFilter("all");}}>
               Clear filters
             </Button>

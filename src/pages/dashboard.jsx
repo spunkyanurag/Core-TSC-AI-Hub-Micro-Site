@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { kpis, platformCoverage, chartData, activities, latestUpdates } from "@/mock-data";
-import { ROLES, useAuth } from "@/auth";
+import { COMPETENCY_ADMIN_ROLES, ROLES, useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -107,18 +108,29 @@ function UpdateArtwork({ update }) {
 }
 
 function LatestUpdates() {
+  const { user } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [isInteracting, setIsInteracting] = useState(false);
   const reduceMotion = useReducedMotion();
-  const total = latestUpdates.length;
-  const update = latestUpdates[activeIndex];
+  const visibleUpdates = filterContentForUser(latestUpdates, user);
+  const total = visibleUpdates.length;
+  const safeActiveIndex = total > 0 ? Math.min(activeIndex, total - 1) : 0;
+  const update = visibleUpdates[safeActiveIndex];
 
   const showSlide = (nextIndex, nextDirection) => {
+    if (!total) return;
+
     setDirection(nextDirection);
     setActiveIndex((nextIndex + total) % total);
   };
+
+  useEffect(() => {
+    if (total > 0 && activeIndex >= total) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, total]);
 
   useEffect(() => {
     if (isPaused || isInteracting || reduceMotion || total < 2) return undefined;
@@ -134,6 +146,10 @@ function LatestUpdates() {
     center: { opacity: 1, x: 0 },
     exit: (slideDirection) => ({ opacity: 0, x: slideDirection * -72 }),
   };
+
+  if (!update) {
+    return null;
+  }
 
   return (
     <motion.section
@@ -192,7 +208,7 @@ function LatestUpdates() {
             transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-10 flex min-h-[360px] w-full flex-col justify-center px-7 py-10 text-white sm:px-12 md:min-h-[410px] md:w-[64%] md:px-14"
             aria-roledescription="slide"
-            aria-label={`${activeIndex + 1} of ${total}`}
+            aria-label={`${safeActiveIndex + 1} of ${total}`}
           >
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
@@ -238,16 +254,16 @@ function LatestUpdates() {
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2">
-            {latestUpdates.map((item, index) => (
+            {visibleUpdates.map((item, index) => (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => showSlide(index, index >= activeIndex ? 1 : -1)}
+                onClick={() => showSlide(index, index >= safeActiveIndex ? 1 : -1)}
                 className={`h-2 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC] focus-visible:ring-offset-2 ${
-                  index === activeIndex ? "w-8 bg-[#056BFC]" : "w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600"
+                  index === safeActiveIndex ? "w-8 bg-[#056BFC]" : "w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600"
                 }`}
                 aria-label={`Show update ${index + 1}: ${item.title}`}
-                aria-current={index === activeIndex ? "true" : undefined}
+                aria-current={index === safeActiveIndex ? "true" : undefined}
               />
             ))}
           </div>
@@ -267,10 +283,24 @@ function LatestUpdates() {
 
 export default function Dashboard() {
   const COLORS = ["#056BFC", "#3FD534", "#FABD00", "#60a5fa", "#16a34a"];
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
+  const visiblePlatformCoverage = filterContentForUser(platformCoverage, user);
+  const visibleActivities = filterContentForUser(activities, user);
+  const visibleActivityFeed = visibleActivities.slice(0, 4);
+  const visibleAssetCategories = filterContentForUser(chartData.assetCategories, user);
+  const visiblePlatformKeys = new Set(
+    visiblePlatformCoverage.map((platform) => platform.platform.replace(/\s+/g, ""))
+  );
+  const visibleCoverageSeries = [
+    { key: "Guidewire", color: "#056BFC", fill: "url(#colorGw)", fillOpacity: 1 },
+    { key: "Earnix", color: "#3FD534", fill: "transparent" },
+    { key: "DuckCreek", color: "#FABD00", fill: "transparent" },
+    { key: "OneShield", color: "#60A5FA", fill: "transparent" },
+    { key: "CCM", color: "#16A34A", fill: "transparent" },
+  ].filter((series) => visiblePlatformKeys.has(series.key));
   const canViewManagementModules = hasRole([
-    ROLES.ADMINISTRATOR,
-    ROLES.COMPETENCY_OWNER,
+    ROLES.SUPER_ADMIN,
+    ...COMPETENCY_ADMIN_ROLES,
   ]);
 
   return (
@@ -492,7 +522,7 @@ export default function Dashboard() {
               <CardDescription>Maturity and expertise across core systems</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {platformCoverage.map((platform, i) => (
+              {visiblePlatformCoverage.map((platform, i) => (
                 <motion.div
                   key={platform.platform}
                   className="space-y-2"
@@ -546,9 +576,17 @@ export default function Dashboard() {
                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                     <RechartsTooltip contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }} itemStyle={{ color: "hsl(var(--foreground))" }} />
-                    <Area type="monotone" dataKey="Guidewire" stroke="#056BFC" strokeWidth={2} fillOpacity={1} fill="url(#colorGw)" />
-                    <Area type="monotone" dataKey="Earnix" stroke="#3FD534" strokeWidth={2} fill="transparent" />
-                    <Area type="monotone" dataKey="DuckCreek" stroke="#FABD00" strokeWidth={2} fill="transparent" />
+                    {visibleCoverageSeries.map((series) => (
+                      <Area
+                        key={series.key}
+                        type="monotone"
+                        dataKey={series.key}
+                        stroke={series.color}
+                        strokeWidth={2}
+                        fillOpacity={series.fillOpacity}
+                        fill={series.fill}
+                      />
+                    ))}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -575,7 +613,7 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={chartData.assetCategories}
+                      data={visibleAssetCategories}
                       cx="50%" cy="50%"
                       innerRadius={60} outerRadius={80}
                       paddingAngle={5} dataKey="value"
@@ -583,7 +621,7 @@ export default function Dashboard() {
                       animationBegin={200}
                       animationDuration={900}
                     >
-                      {chartData.assetCategories.map((_, index) => (
+                      {visibleAssetCategories.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -620,7 +658,7 @@ export default function Dashboard() {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
               >
-                {activities.slice(0, 4).map((activity, i) => (
+                {visibleActivityFeed.map((activity, i) => (
                   <motion.div
                     key={activity.id}
                     variants={fadeLeft}
@@ -633,7 +671,7 @@ export default function Dashboard() {
                         animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
                         transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
                       />
-                      {i !== 3 && (
+                      {i !== visibleActivityFeed.length - 1 && (
                         <motion.div
                           className="absolute top-2.5 left-[4px] w-px bg-border -translate-x-1/2"
                           initial={{ height: 0 }}
@@ -651,6 +689,11 @@ export default function Dashboard() {
                     </div>
                   </motion.div>
                 ))}
+                {visibleActivityFeed.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No activity is available for your account.
+                  </p>
+                )}
               </motion.div>
             </CardContent>
           </Card>

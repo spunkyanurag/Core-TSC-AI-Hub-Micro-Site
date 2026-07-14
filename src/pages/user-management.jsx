@@ -13,13 +13,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { MockAuthService, ROLES } from "@/auth";
+import { COMPETENCY_ADMIN_ROLES, MockAuthService, ROLES } from "@/auth";
+import { CONTENT_ACCESS_ROLES, CONTENT_ACCESS_ROLE_GENERAL } from "@/lib/content-access";
 
 const roleStyles = {
-  [ROLES.ADMINISTRATOR]: "border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]",
-  [ROLES.COMPETENCY_OWNER]: "border-[#FABD00]/35 bg-[#FABD00]/12 text-[#9A6500]",
-  [ROLES.GENERAL_USER]: "border-border bg-muted text-muted-foreground",
+  [ROLES.SUPER_ADMIN]: "border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]",
+  [ROLES.GUIDEWIRE_COMPETENCY_ADMIN]: "border-[#FABD00]/35 bg-[#FABD00]/12 text-[#9A6500]",
+  [ROLES.EARNIX_COMPETENCY_ADMIN]: "border-[#23C842]/25 bg-[#23C842]/10 text-[#18772A]",
+  [ROLES.VIEWER]: "border-border bg-muted text-muted-foreground",
 };
+
+const competencyOptions = CONTENT_ACCESS_ROLES.filter(
+  (role) => role.name !== CONTENT_ACCESS_ROLE_GENERAL
+);
 
 function getInitials(name = "") {
   return name
@@ -37,6 +43,18 @@ function formatDate(date) {
     day: "2-digit",
     year: "numeric",
   }).format(new Date(date));
+}
+
+function getCompetencyLabel(user) {
+  if (user.competencies?.includes("All")) {
+    return "All content roles";
+  }
+
+  if (user.competencies?.length) {
+    return user.competencies.join(", ");
+  }
+
+  return "General only";
 }
 
 function StatCard({ icon: Icon, label, value, tone }) {
@@ -59,6 +77,7 @@ export default function UserManagement() {
   const users = useMemo(() => MockAuthService.getMockUsers(), []);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [competencyFilter, setCompetencyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredUsers = useMemo(() => {
@@ -67,24 +86,28 @@ export default function UserManagement() {
     return users.filter((user) => {
       const matchesSearch =
         !normalizedSearch ||
-        [user.name, user.email, user.department, user.title]
+        [user.name, user.email, user.department, user.title, getCompetencyLabel(user)]
           .join(" ")
           .toLowerCase()
           .includes(normalizedSearch);
       const matchesRole = roleFilter === "all" || user.roles.includes(roleFilter);
+      const matchesCompetency =
+        competencyFilter === "all" ||
+        user.competencies?.includes("All") ||
+        user.competencies?.includes(competencyFilter);
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" ? user.isActive : !user.isActive);
 
-      return matchesSearch && matchesRole && matchesStatus;
+      return matchesSearch && matchesRole && matchesCompetency && matchesStatus;
     });
-  }, [roleFilter, search, statusFilter, users]);
+  }, [competencyFilter, roleFilter, search, statusFilter, users]);
 
-  const administrators = users.filter((user) =>
-    user.roles.includes(ROLES.ADMINISTRATOR)
+  const superAdmins = users.filter((user) =>
+    user.roles.includes(ROLES.SUPER_ADMIN)
   ).length;
-  const competencyOwners = users.filter((user) =>
-    user.roles.includes(ROLES.COMPETENCY_OWNER)
+  const competencyAdmins = users.filter((user) =>
+    user.roles.some((role) => COMPETENCY_ADMIN_ROLES.includes(role))
   ).length;
   const activeUsers = users.filter((user) => user.isActive).length;
 
@@ -114,20 +137,20 @@ export default function UserManagement() {
         />
         <StatCard
           icon={ShieldCheck}
-          label="Administrators"
-          value={administrators}
+          label="Super Admins"
+          value={superAdmins}
           tone="bg-[#056BFC]/10 text-[#056BFC]"
         />
         <StatCard
           icon={UserCog}
-          label="Competency Owners"
-          value={competencyOwners}
+          label="Competency Admins"
+          value={competencyAdmins}
           tone="bg-[#FABD00]/14 text-[#D99A00]"
         />
       </section>
 
       <section className="rounded-lg border bg-card p-5 shadow-sm">
-        <div className="grid gap-4 lg:grid-cols-[minmax(260px,1fr)_220px_220px_auto]">
+        <div className="grid gap-4 lg:grid-cols-[minmax(260px,1fr)_220px_220px_220px_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -146,11 +169,25 @@ export default function UserManagement() {
               className="h-11 w-full rounded-md border border-input bg-background pl-10 pr-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
             >
               <option value="all">All roles</option>
-              <option value={ROLES.ADMINISTRATOR}>Administrators</option>
-              <option value={ROLES.COMPETENCY_OWNER}>Competency Owners</option>
-              <option value={ROLES.GENERAL_USER}>General Users</option>
+              <option value={ROLES.SUPER_ADMIN}>Super Admin</option>
+              <option value={ROLES.GUIDEWIRE_COMPETENCY_ADMIN}>Guidewire Competency Admin</option>
+              <option value={ROLES.EARNIX_COMPETENCY_ADMIN}>Earnix Competency Admin</option>
+              <option value={ROLES.VIEWER}>Viewer</option>
             </select>
           </div>
+
+          <select
+            value={competencyFilter}
+            onChange={(event) => setCompetencyFilter(event.target.value)}
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option value="all">All competencies</option>
+            {competencyOptions.map((role) => (
+              <option key={role.id} value={role.name}>
+                {role.name}
+              </option>
+            ))}
+          </select>
 
           <select
             value={statusFilter}
@@ -171,12 +208,13 @@ export default function UserManagement() {
 
       <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left">
+          <table className="w-full min-w-[1080px] text-left">
             <thead className="border-b bg-muted/35 text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-6 py-4 font-semibold">User</th>
                 <th className="px-6 py-4 font-semibold">Department</th>
                 <th className="px-6 py-4 font-semibold">Role</th>
+                <th className="px-6 py-4 font-semibold">Competencies</th>
                 <th className="px-6 py-4 font-semibold">Joined</th>
                 <th className="px-6 py-4 font-semibold">Active</th>
                 <th className="px-6 py-4 text-right font-semibold">Actions</th>
@@ -216,6 +254,11 @@ export default function UserManagement() {
                         }`}
                       >
                         {primaryRole}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="inline-flex max-w-56 items-center rounded-full border border-[#056BFC]/20 bg-[#056BFC]/5 px-3 py-1 text-xs font-medium text-[#055FE0]">
+                        {getCompetencyLabel(user)}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-sm text-muted-foreground">

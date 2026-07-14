@@ -1,13 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { LogIn, ShieldCheck } from "lucide-react";
+import { Eye, LogIn, ShieldCheck, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MockAuthService, useAuth } from "@/auth";
+import { COMPETENCY_ADMIN_ROLES, MockAuthService, ROLES, useAuth } from "@/auth";
 
 const LogoLight = "/assets/logo-light.png";
+const COMPETENCY_ADMIN_LOGIN_ROLE = "Competency Admin";
+
+const ROLE_OPTIONS = [
+  {
+    value: ROLES.SUPER_ADMIN,
+    label: "Super Admin",
+    description: "Full portal access, user management, and settings.",
+    icon: ShieldCheck,
+  },
+  {
+    value: COMPETENCY_ADMIN_LOGIN_ROLE,
+    label: "Competency Admin",
+    description: "Manage assigned competency content and resources.",
+    icon: UserCog,
+  },
+  {
+    value: ROLES.VIEWER,
+    label: "Viewer",
+    description: "Read-only access. Any email can sign in as Viewer.",
+    icon: Eye,
+  },
+];
+
+function userMatchesLoginRole(user, role) {
+  if (role === COMPETENCY_ADMIN_LOGIN_ROLE) {
+    return user.roles.some((userRole) =>
+      COMPETENCY_ADMIN_ROLES.includes(userRole)
+    );
+  }
+
+  return user.roles.includes(role);
+}
 
 function getRedirectPath() {
   const params = new URLSearchParams(window.location.search);
@@ -18,9 +50,18 @@ function getRedirectPath() {
 
 export default function Login() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, login, loginAsDefaultUser } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const mockUsers = useMemo(() => MockAuthService.getMockUsers(), []);
-  const [email, setEmail] = useState(mockUsers[0]?.email || "");
+  const [selectedRole, setSelectedRole] = useState(ROLES.SUPER_ADMIN);
+  const roleUsers = useMemo(
+    () => mockUsers.filter((user) => userMatchesLoginRole(user, selectedRole)),
+    [mockUsers, selectedRole]
+  );
+  const [email, setEmail] = useState(
+    mockUsers.find((user) => user.roles.includes(ROLES.SUPER_ADMIN))?.email ||
+      mockUsers[0]?.email ||
+      ""
+  );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,13 +71,19 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
-  async function handleLogin(event) {
-    event.preventDefault();
+  function handleRoleChange(role) {
+    setError("");
+    setSelectedRole(role);
+    setEmail(mockUsers.find((user) => userMatchesLoginRole(user, role))?.email || "");
+  }
+
+  async function handleLogin(event, emailOverride = email) {
+    event?.preventDefault();
     setError("");
     setIsSubmitting(true);
 
     try {
-      await login({ email });
+      await login({ email: emailOverride, role: selectedRole });
       navigate(getRedirectPath(), { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -46,11 +93,19 @@ export default function Login() {
   }
 
   async function handleDefaultLogin() {
+    const demoUser = roleUsers[0];
+
+    if (!demoUser) {
+      setError(`No demo account is configured for ${selectedRole}.`);
+      return;
+    }
+
+    setEmail(demoUser.email);
     setError("");
     setIsSubmitting(true);
 
     try {
-      await loginAsDefaultUser();
+      await login({ email: demoUser.email, role: selectedRole });
       navigate(getRedirectPath(), { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -91,13 +146,62 @@ export default function Login() {
               <img src={LogoLight} alt="ValueMomentum" className="h-9 w-fit object-contain dark:hidden" />
               <CardTitle className="text-2xl">Sign in</CardTitle>
               <CardDescription>
-                Use your ValueMomentum identity to continue.
+                Choose your user type and ValueMomentum identity to continue.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-5" onSubmit={handleLogin}>
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-medium text-foreground">
+                    Which type of user are you?
+                  </legend>
+                  <div className="grid gap-2">
+                    {ROLE_OPTIONS.map((option) => {
+                      const Icon = option.icon;
+                      const isSelected = selectedRole === option.value;
+
+                      return (
+                        <Label
+                          key={option.value}
+                          className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors ${
+                            isSelected
+                              ? "border-[#056BFC] bg-[#056BFC]/10 text-foreground shadow-sm"
+                              : "border-border bg-background hover:border-[#056BFC]/45"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="userType"
+                            value={option.value}
+                            checked={isSelected}
+                            onChange={() => handleRoleChange(option.value)}
+                            className="sr-only"
+                          />
+                          <span
+                            className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md ${
+                              isSelected
+                                ? "bg-[#056BFC] text-white"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0 space-y-1">
+                            <span className="block text-sm font-semibold">
+                              {option.label}
+                            </span>
+                            <span className="block text-xs leading-5 text-muted-foreground">
+                              {option.description}
+                            </span>
+                          </span>
+                        </Label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{selectedRole} account</Label>
                   <Input
                     id="email"
                     list="mock-users"
@@ -105,11 +209,12 @@ export default function Login() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     autoComplete="email"
+                    placeholder={selectedRole === ROLES.VIEWER ? "Enter any email address" : undefined}
                   />
                   <datalist id="mock-users">
-                    {mockUsers.map((user) => (
+                    {roleUsers.map((user) => (
                       <option key={user.id} value={user.email}>
-                        {user.name} - {user.roles.join(", ")}
+                        {user.name}
                       </option>
                     ))}
                   </datalist>
@@ -133,7 +238,9 @@ export default function Login() {
                     onClick={handleDefaultLogin}
                     className="w-full"
                   >
-                    Use default account
+                    {selectedRole === ROLES.VIEWER
+                      ? "Continue as Viewer"
+                      : "Use selected role account"}
                   </Button>
                 </div>
               </form>

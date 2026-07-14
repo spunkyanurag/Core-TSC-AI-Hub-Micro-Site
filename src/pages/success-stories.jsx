@@ -2,9 +2,14 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { successStories } from "@/mock-data";
+import { useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
 import { Trophy, TrendingUp, Building2, Layers } from "lucide-react";
 
 export default function SuccessStories() {
+  const { user } = useAuth();
+  const visibleStories = filterContentForUser(successStories, user);
+
   return (
     <div className="space-y-6">
       <div>
@@ -13,7 +18,7 @@ export default function SuccessStories() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {successStories.map((story, i) => (
+        {visibleStories.map((story, i) => (
           <motion.div
             key={story.id}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -54,6 +59,13 @@ export default function SuccessStories() {
             </Card>
           </motion.div>
         ))}
+        {visibleStories.length === 0 && (
+          <Card className="md:col-span-2 border-border/50">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No success stories are available for your account.
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

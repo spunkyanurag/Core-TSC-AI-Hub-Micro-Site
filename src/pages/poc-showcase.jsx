@@ -3,9 +3,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { pocs } from "@/mock-data";
+import { useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
 import { FlaskConical, Play, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 export default function PocShowcase() {
+  const { user } = useAuth();
+  const visiblePocs = filterContentForUser(pocs, user);
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Active": return "text-[#056BFC] border-[#056BFC]/20 bg-[#056BFC]/10";
@@ -37,7 +42,7 @@ export default function PocShowcase() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pocs.map((poc, i) => (
+        {visiblePocs.map((poc, i) => (
           <motion.div
             key={poc.id}
             initial={{ opacity: 0, y: 20 }}
@@ -68,6 +73,13 @@ export default function PocShowcase() {
             </Card>
           </motion.div>
         ))}
+        {visiblePocs.length === 0 && (
+          <Card className="col-span-full border-border/50">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No POCs are available for your account.
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

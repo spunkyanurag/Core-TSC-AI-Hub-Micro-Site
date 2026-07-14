@@ -1,3 +1,5 @@
+import { CONTENT_ACCESS_ROLE, getContentAccessRoleForPlatform } from "@/lib/content-access";
+
 export const kpis = {
   totalCompetencies: 0,
   accelerators: 0,
@@ -8,11 +10,11 @@ export const kpis = {
 };
 
 export const platformCoverage = [
-  { platform: "Guidewire", coverage: 0 },
-  { platform: "Earnix", coverage: 0 },
-  { platform: "Duck Creek", coverage: 0 },
-  { platform: "OneShield", coverage: 0 },
-  { platform: "CCM", coverage: 0 },
+  { platform: "Guidewire", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GUIDEWIRE },
+  { platform: "Earnix", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX },
+  { platform: "Duck Creek", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.DUCK_CREEK },
+  { platform: "OneShield", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.ONESHIELD },
+  { platform: "CCM", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.CCM },
 ];
 
 export const competencies = [
@@ -21,72 +23,77 @@ export const competencies = [
     name: "Guidewire",
     overview: "Comprehensive suite of services for Guidewire InsuranceSuite implementation and upgrades.",
     expertise: "PolicyCenter, BillingCenter, ClaimCenter",
+    contentAccessRole: CONTENT_ACCESS_ROLE.GUIDEWIRE,
   },
   {
     id: "earnix",
     name: "Earnix",
     overview: "Advanced rating, pricing, and product personalization.",
     expertise: "Price-It, Personalize-It",
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     id: "duck-creek",
     name: "Duck Creek",
     overview: "SaaS core systems for P&C insurance.",
     expertise: "Policy, Billing, Claims",
+    contentAccessRole: CONTENT_ACCESS_ROLE.DUCK_CREEK,
   },
   {
     id: "oneshield",
     name: "OneShield",
     overview: "Core systems for P&C and MGA markets.",
     expertise: "Enterprise, Market Solutions",
+    contentAccessRole: CONTENT_ACCESS_ROLE.ONESHIELD,
   },
   {
     id: "ccm",
     name: "CCM",
     overview: "Customer Communications Management solutions.",
     expertise: "Quadient, Smart Communications",
+    contentAccessRole: CONTENT_ACCESS_ROLE.CCM,
   }
 ];
 
 export const assets = [
-  { id: "1", name: "GW Cloud Migration Accelerator", description: "Speeds up Guidewire on-prem to cloud migration.", businessValue: "40% Faster Delivery", platform: "Guidewire", category: "Accelerators", effortSavings: 40, reusabilityScore: 9 },
-  { id: "2", name: "Automated Testing Framework", description: "E2E testing for core systems.", businessValue: "30% Reduced Risk", platform: "Multi", category: "Frameworks", effortSavings: 50, reusabilityScore: 10 },
-  { id: "3", name: "Data Extraction Tool", description: "Extracts legacy data for migration.", businessValue: "60% Automation", platform: "Duck Creek", category: "Utilities", effortSavings: 60, reusabilityScore: 8 },
-  { id: "4", name: "Rating Engine Integration", description: "Seamless Earnix integration.", businessValue: "85% Modernization", platform: "Earnix", category: "Integration", effortSavings: 35, reusabilityScore: 7 },
-  { id: "5", name: "Digital Claims Portal", description: "Self-service claims portal.", businessValue: "70% Digital Transformation", platform: "Guidewire", category: "Accelerators", effortSavings: 45, reusabilityScore: 9 },
-  { id: "6", name: "Policy Admin Dashboard", description: "Enhanced policy management view.", businessValue: "55% Operational Efficiency", platform: "OneShield", category: "POCs", effortSavings: 20, reusabilityScore: 6 },
+  { id: "1", name: "GW Cloud Migration Accelerator", description: "Speeds up Guidewire on-prem to cloud migration.", businessValue: "40% Faster Delivery", platform: "Guidewire", category: "Accelerators", effortSavings: 40, reusabilityScore: 9, contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "2", name: "Automated Testing Framework", description: "E2E testing for core systems.", businessValue: "30% Reduced Risk", platform: "Multi", category: "Frameworks", effortSavings: 50, reusabilityScore: 10, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { id: "3", name: "Data Extraction Tool", description: "Extracts legacy data for migration.", businessValue: "60% Automation", platform: "Duck Creek", category: "Utilities", effortSavings: 60, reusabilityScore: 8, contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+  { id: "4", name: "Rating Engine Integration", description: "Seamless Earnix integration.", businessValue: "85% Modernization", platform: "Earnix", category: "Integration", effortSavings: 35, reusabilityScore: 7, contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { id: "5", name: "Digital Claims Portal", description: "Self-service claims portal.", businessValue: "70% Digital Transformation", platform: "Guidewire", category: "Accelerators", effortSavings: 45, reusabilityScore: 9, contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "6", name: "Policy Admin Dashboard", description: "Enhanced policy management view.", businessValue: "55% Operational Efficiency", platform: "OneShield", category: "POCs", effortSavings: 20, reusabilityScore: 6, contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
 ];
 
 export const pocs = [
-  { id: "1", name: "GenAI Underwriting Assistant", status: "Active", platform: "Guidewire", impact: "High" },
-  { id: "2", name: "Automated Quote Generation", status: "Completed", platform: "Duck Creek", impact: "Medium" },
-  { id: "3", name: "Dynamic Pricing Model", status: "In Progress", platform: "Earnix", impact: "High" },
-  { id: "4", name: "Smart Claims Triage", status: "Planned", platform: "Guidewire", impact: "Medium" },
-  { id: "5", name: "Omnichannel Communications", status: "Active", platform: "CCM", impact: "High" },
-  { id: "6", name: "Legacy Data Migration", status: "Completed", platform: "OneShield", impact: "High" },
+  { id: "1", name: "GenAI Underwriting Assistant", status: "Active", platform: "Guidewire", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "2", name: "Automated Quote Generation", status: "Completed", platform: "Duck Creek", impact: "Medium", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+  { id: "3", name: "Dynamic Pricing Model", status: "In Progress", platform: "Earnix", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { id: "4", name: "Smart Claims Triage", status: "Planned", platform: "Guidewire", impact: "Medium", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "5", name: "Omnichannel Communications", status: "Active", platform: "CCM", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+  { id: "6", name: "Legacy Data Migration", status: "Completed", platform: "OneShield", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
 ];
 
 export const successStories = [
-  { id: "1", customer: "Tier 1 Carrier", industry: "P&C", platform: "Guidewire", metrics: "30% cost reduction" },
-  { id: "2", customer: "Regional MGA", industry: "Specialty", platform: "OneShield", metrics: "50% faster time to market" },
-  { id: "3", customer: "Global Insurer", industry: "Commercial", platform: "Duck Creek", metrics: "2x quote volume" },
-  { id: "4", customer: "Auto Insurer", industry: "Personal", platform: "Earnix", metrics: "15% increase in conversion" },
+  { id: "1", customer: "Tier 1 Carrier", industry: "P&C", platform: "Guidewire", metrics: "30% cost reduction", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "2", customer: "Regional MGA", industry: "Specialty", platform: "OneShield", metrics: "50% faster time to market", contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
+  { id: "3", customer: "Global Insurer", industry: "Commercial", platform: "Duck Creek", metrics: "2x quote volume", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+  { id: "4", customer: "Auto Insurer", industry: "Personal", platform: "Earnix", metrics: "15% increase in conversion", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
 ];
 
 export const innovations = [
-  { id: "1", title: "AI-Driven Code Generation", description: "Using LLMs to generate boilerplate configuration." },
-  { id: "2", title: "Predictive Claims Analytics", description: "Machine learning models for claims severity prediction." },
-  { id: "3", title: "Automated Regression Suite", description: "Self-healing test scripts." },
-  { id: "4", title: "IoT Data Integration", description: "Telematics integration framework." },
-  { id: "5", title: "Blockchain Smart Contracts", description: "Parametric insurance proof of concept." },
+  { id: "1", title: "AI-Driven Code Generation", description: "Using LLMs to generate boilerplate configuration.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { id: "2", title: "Predictive Claims Analytics", description: "Machine learning models for claims severity prediction.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "3", title: "Automated Regression Suite", description: "Self-healing test scripts.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { id: "4", title: "IoT Data Integration", description: "Telematics integration framework.", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+  { id: "5", title: "Blockchain Smart Contracts", description: "Parametric insurance proof of concept.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 export const activities = [
-  { id: "1", action: "Published new accelerator", target: "GW Cloud Migration", time: "2 hours ago" },
-  { id: "2", action: "Completed POC", target: "GenAI Under underwriting", time: "5 hours ago" },
-  { id: "3", action: "Updated framework", target: "Automated Testing", time: "1 day ago" },
-  { id: "4", action: "Added success story", target: "Tier 1 Carrier Migration", time: "2 days ago" },
-  { id: "5", action: "Started innovation initiative", target: "Predictive Claims Analytics", time: "3 days ago" },
+  { id: "1", action: "Published new accelerator", target: "GW Cloud Migration", time: "2 hours ago", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "2", action: "Completed POC", target: "GenAI Under underwriting", time: "5 hours ago", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "3", action: "Updated framework", target: "Automated Testing", time: "1 day ago", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { id: "4", action: "Added success story", target: "Tier 1 Carrier Migration", time: "2 days ago", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { id: "5", action: "Started innovation initiative", target: "Predictive Claims Analytics", time: "3 days ago", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
 ];
 
 // Dashboard announcements are kept here so the carousel can be updated
@@ -103,6 +110,7 @@ export const latestUpdates = [
     href: "/poc-showcase",
     accent: "#3FD534",
     secondaryAccent: "#FABD00",
+    contentAccessRole: getContentAccessRoleForPlatform("Guidewire"),
   },
   {
     id: "earnix-demo-library",
@@ -115,6 +123,7 @@ export const latestUpdates = [
     href: "/earnix-demos",
     accent: "#FABD00",
     secondaryAccent: "#3FD534",
+    contentAccessRole: getContentAccessRoleForPlatform("Earnix"),
   },
   {
     id: "cloud-accelerator",
@@ -127,6 +136,7 @@ export const latestUpdates = [
     href: "/assets",
     accent: "#60A5FA",
     secondaryAccent: "#FABD00",
+    contentAccessRole: getContentAccessRoleForPlatform("Guidewire"),
   },
 ];
 
@@ -146,10 +156,10 @@ export const chartData = {
     { month: "Dec", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
   ],
   assetCategories: [
-    { name: "Accelerators", value: 0 },
-    { name: "Frameworks", value: 0 },
-    { name: "Utilities", value: 0 },
-    { name: "Integration", value: 0 },
-    { name: "POCs", value: 0 },
+    { name: "Accelerators", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+    { name: "Frameworks", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+    { name: "Utilities", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+    { name: "Integration", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+    { name: "POCs", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
   ]
 };

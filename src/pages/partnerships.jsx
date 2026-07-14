@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import { Handshake, ExternalLink, Star, Building2, Globe, ArrowRight, ShieldCheck, TrendingUp } from "lucide-react";
 
 /* ── variants ────────────────────────────────────────────────── */
@@ -29,40 +31,50 @@ const partnerTiers = [
   {
     tier: "Premier Partner", color: "#FABD00",
     partners: [
-      { name: "Guidewire Software", type: "Core Platform", description: "Premier implementation and consulting partner for InsuranceSuite — PolicyCenter, ClaimCenter, BillingCenter.", badges: ["PolicyCenter", "ClaimCenter", "BillingCenter", "Cloud"], certifications: 12, listings: 3 },
-      { name: "Earnix", type: "Rating & Pricing", description: "Strategic partner for dynamic pricing, rating modernisation, and AI-powered product personalisation.", badges: ["Price-It", "Personalize-It", "AI Pricing"], certifications: 6, listings: 2 },
+      { name: "Guidewire Software", type: "Core Platform", description: "Premier implementation and consulting partner for InsuranceSuite — PolicyCenter, ClaimCenter, BillingCenter.", badges: ["PolicyCenter", "ClaimCenter", "BillingCenter", "Cloud"], certifications: 12, listings: 3, contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+      { name: "Earnix", type: "Rating & Pricing", description: "Strategic partner for dynamic pricing, rating modernisation, and AI-powered product personalisation.", badges: ["Price-It", "Personalize-It", "AI Pricing"], certifications: 6, listings: 2, contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
     ],
   },
   {
     tier: "Select Partner", color: "#056BFC",
     partners: [
-      { name: "Duck Creek Technologies", type: "Core Platform", description: "SaaS-based policy, billing, and claims systems for P&C insurers and MGAs.", badges: ["Policy", "Billing", "Claims", "SaaS"], certifications: 8, listings: 2 },
-      { name: "OneShield", type: "Core Platform", description: "Core administration systems for specialty P&C and MGA markets.", badges: ["Enterprise", "Market", "MGA"], certifications: 5, listings: 1 },
+      { name: "Duck Creek Technologies", type: "Core Platform", description: "SaaS-based policy, billing, and claims systems for P&C insurers and MGAs.", badges: ["Policy", "Billing", "Claims", "SaaS"], certifications: 8, listings: 2, contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+      { name: "OneShield", type: "Core Platform", description: "Core administration systems for specialty P&C and MGA markets.", badges: ["Enterprise", "Market", "MGA"], certifications: 5, listings: 1, contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
     ],
   },
   {
     tier: "Technology Alliance", color: "#3FD534",
     partners: [
-      { name: "Quadient / Smart Communications", type: "CCM Platform", description: "Customer communications management for personalised, compliant multi-channel delivery.", badges: ["CCM", "Digital", "Compliance"], certifications: 4, listings: 1 },
+      { name: "Quadient / Smart Communications", type: "CCM Platform", description: "Customer communications management for personalised, compliant multi-channel delivery.", badges: ["CCM", "Digital", "Compliance"], certifications: 4, listings: 1, contentAccessRole: getContentAccessRoleForPlatform("CCM") },
     ],
   },
 ];
 
 const marketplaceListings = [
-  { name: "GW Cloud Migration Accelerator", platform: "Guidewire Marketplace", description: "End-to-end toolkit for migrating on-premises Guidewire deployments to cloud.", status: "Listed", icon: "🚀" },
-  { name: "Automated Testing Framework",    platform: "Guidewire Marketplace", description: "E2E regression and smoke-test suite for InsuranceSuite with CI/CD integration.",            status: "Listed",    icon: "🧪" },
-  { name: "Earnix Integration Connector",   platform: "Earnix Marketplace",    description: "Pre-built connector between Earnix Price-It and Guidewire PolicyCenter.",                   status: "Listed",    icon: "🔗" },
-  { name: "Digital Claims Portal",          platform: "Guidewire Marketplace", description: "Self-service claims portal with AI-assisted intake and status tracking.",                    status: "In Review", icon: "📋" },
+  { name: "GW Cloud Migration Accelerator", platform: "Guidewire Marketplace", description: "End-to-end toolkit for migrating on-premises Guidewire deployments to cloud.", status: "Listed", icon: "🚀", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { name: "Automated Testing Framework",    platform: "Guidewire Marketplace", description: "E2E regression and smoke-test suite for InsuranceSuite with CI/CD integration.",            status: "Listed",    icon: "🧪", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { name: "Earnix Integration Connector",   platform: "Earnix Marketplace",    description: "Pre-built connector between Earnix Price-It and Guidewire PolicyCenter.",                   status: "Listed",    icon: "🔗", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { name: "Digital Claims Portal",          platform: "Guidewire Marketplace", description: "Self-service claims portal with AI-assisted intake and status tracking.",                    status: "In Review", icon: "📋", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
 ];
 
 const stats = [
-  { label: "Active Partnerships",   value: "5",   icon: Handshake,  color: "#056BFC" },
-  { label: "Marketplace Listings",  value: "4",   icon: Globe,      color: "#3FD534" },
-  { label: "Total Certifications",  value: "35+", icon: ShieldCheck,color: "#FABD00" },
-  { label: "Partner Tiers",         value: "3",   icon: Star,       color: "#ffffff" },
+  { label: "Active Partnerships",   value: "5",   icon: Handshake,  color: "#056BFC", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Marketplace Listings",  value: "4",   icon: Globe,      color: "#3FD534", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Total Certifications",  value: "35+", icon: ShieldCheck,color: "#FABD00", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Partner Tiers",         value: "3",   icon: Star,       color: "#ffffff", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 export default function Partnerships() {
+  const { user } = useAuth();
+  const visiblePartnerTiers = partnerTiers
+    .map((tier) => ({
+      ...tier,
+      partners: filterContentForUser(tier.partners, user),
+    }))
+    .filter((tier) => tier.partners.length > 0);
+  const visibleMarketplaceListings = filterContentForUser(marketplaceListings, user);
+  const visibleStats = filterContentForUser(stats, user);
+
   return (
     <div className="space-y-8">
 
@@ -113,7 +125,7 @@ export default function Partnerships() {
             className="grid grid-cols-2 gap-3"
             variants={container} initial="hidden" animate="show"
           >
-            {stats.map((s) => {
+            {visibleStats.map((s) => {
               const Icon = s.icon;
               return (
                 <motion.div
@@ -134,7 +146,7 @@ export default function Partnerships() {
 
       {/* ── PARTNER TIERS ─────────────────────────────────────── */}
       <div className="space-y-6">
-        {partnerTiers.map((tier, ti) => (
+        {visiblePartnerTiers.map((tier, ti) => (
           <div key={tier.tier}>
             <motion.div
               className="flex items-center gap-3 mb-3"
@@ -191,6 +203,13 @@ export default function Partnerships() {
             </motion.div>
           </div>
         ))}
+        {visiblePartnerTiers.length === 0 && (
+          <Card className="border-border/50">
+            <CardContent className="p-8 text-center text-sm text-muted-foreground">
+              No partner content is available for your account.
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* ── MARKETPLACE LISTINGS ──────────────────────────────── */}
@@ -208,7 +227,7 @@ export default function Partnerships() {
           variants={container} initial="hidden"
           whileInView="show" viewport={{ once: true, amount: 0.1 }}
         >
-          {marketplaceListings.map((listing) => (
+          {visibleMarketplaceListings.map((listing) => (
             <motion.div
               key={listing.name}
               variants={fadeUp}
@@ -247,6 +266,13 @@ export default function Partnerships() {
               </Card>
             </motion.div>
           ))}
+          {visibleMarketplaceListings.length === 0 && (
+            <Card className="sm:col-span-2 lg:col-span-4 border-border/50">
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No marketplace listings are available for your account.
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
 

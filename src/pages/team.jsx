@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import { Users, ShieldCheck, Star, Award, Mail, ArrowRight, TrendingUp, Layers } from "lucide-react";
 
 /* ── variants ────────────────────────────────────────────────── */
@@ -45,27 +47,27 @@ const MaturityDots = ({ score }) => {
 };
 
 const teamStats = [
-  { label: "Team Strength",       value: "120+", icon: Users,      color: "#056BFC" },
-  { label: "Certifications",      value: "35+",  icon: ShieldCheck,color: "#3FD534" },
-  { label: "Competencies",        value: "5",    icon: Layers,     color: "#FABD00" },
-  { label: "Years of Experience", value: "10+",  icon: Award,      color: "#ffffff" },
+  { label: "Team Strength",       value: "120+", icon: Users,      color: "#056BFC", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Certifications",      value: "35+",  icon: ShieldCheck,color: "#3FD534", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Competencies",        value: "5",    icon: Layers,     color: "#FABD00", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Years of Experience", value: "10+",  icon: Award,      color: "#ffffff", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 const competencyTeams = [
-  { platform: "Guidewire",  lead: "Practice Lead — Guidewire",  teamSize: "40+", certifications: 12, maturity: 4,   capabilities: ["PolicyCenter", "ClaimCenter", "BillingCenter", "Cloud Migration", "Upgrades", "Testing"], accent: "#056BFC", highlight: "Largest practice — 10+ years, 25+ client engagements" },
-  { platform: "Earnix",     lead: "Practice Lead — Earnix",     teamSize: "15+", certifications: 6,  maturity: 3,   capabilities: ["Price-It", "Personalize-It", "AI Pricing", "Guidewire Integration"],                    accent: "#3FD534", highlight: "Fastest-growing practice with AI pricing expertise" },
-  { platform: "Duck Creek", lead: "Practice Lead — Duck Creek", teamSize: "25+", certifications: 8,  maturity: 3,   capabilities: ["Policy", "Billing", "Claims", "SaaS OnDemand", "Data Migration"],                      accent: "#FABD00", highlight: "Strong SaaS and MGA delivery track record" },
-  { platform: "OneShield",  lead: "Practice Lead — OneShield",  teamSize: "20+", certifications: 5,  maturity: 3.5, capabilities: ["Enterprise", "Market Solutions", "MGA", "Specialty Lines"],                            accent: "#8b5cf6", highlight: "Deep specialty P&C and MGA market expertise" },
-  { platform: "CCM",        lead: "Practice Lead — CCM",        teamSize: "20+", certifications: 4,  maturity: 3.5, capabilities: ["Quadient", "Smart Communications", "Digital Delivery", "Compliance"],                  accent: "#f97316", highlight: "Customer communications across print, digital, and omnichannel" },
+  { platform: "Guidewire",  lead: "Practice Lead - Guidewire",  teamSize: "40+", certifications: 12, maturity: 4,   capabilities: ["PolicyCenter", "ClaimCenter", "BillingCenter", "Cloud Migration", "Upgrades", "Testing"], accent: "#056BFC", highlight: "Largest practice - 10+ years, 25+ client engagements", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { platform: "Earnix",     lead: "Practice Lead - Earnix",     teamSize: "15+", certifications: 6,  maturity: 3,   capabilities: ["Price-It", "Personalize-It", "AI Pricing", "Guidewire Integration"],                    accent: "#3FD534", highlight: "Fastest-growing practice with AI pricing expertise", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { platform: "Duck Creek", lead: "Practice Lead - Duck Creek", teamSize: "25+", certifications: 8,  maturity: 3,   capabilities: ["Policy", "Billing", "Claims", "SaaS OnDemand", "Data Migration"],                      accent: "#FABD00", highlight: "Strong SaaS and MGA delivery track record", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
+  { platform: "OneShield",  lead: "Practice Lead - OneShield",  teamSize: "20+", certifications: 5,  maturity: 3.5, capabilities: ["Enterprise", "Market Solutions", "MGA", "Specialty Lines"],                            accent: "#8b5cf6", highlight: "Deep specialty P&C and MGA market expertise", contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
+  { platform: "CCM",        lead: "Practice Lead - CCM",        teamSize: "20+", certifications: 4,  maturity: 3.5, capabilities: ["Quadient", "Smart Communications", "Digital Delivery", "Compliance"],                  accent: "#f97316", highlight: "Customer communications across print, digital, and omnichannel", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
 ];
 
 const capabilityAreas = [
-  { area: "Implementation & Upgrades",    strength: "Expert",   count: "50+ engagements" },
-  { area: "Cloud Migration",              strength: "Advanced", count: "15+ migrations" },
-  { area: "AI & Automation",              strength: "Growing",  count: "6 active POCs" },
-  { area: "Testing & QA",                 strength: "Expert",   count: "Dedicated CoE" },
-  { area: "Data Migration & Integration", strength: "Advanced", count: "30+ projects" },
-  { area: "Training & Enablement",        strength: "Advanced", count: "Certified trainers" },
+  { area: "Implementation & Upgrades",    strength: "Expert",   count: "50+ engagements", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { area: "Cloud Migration",              strength: "Advanced", count: "15+ migrations", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { area: "AI & Automation",              strength: "Growing",  count: "6 active POCs", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { area: "Testing & QA",                 strength: "Expert",   count: "Dedicated CoE", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { area: "Data Migration & Integration", strength: "Advanced", count: "30+ projects", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { area: "Training & Enablement",        strength: "Advanced", count: "Certified trainers", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 const strengthColors = {
@@ -74,7 +76,19 @@ const strengthColors = {
   Growing:  { color: "#FABD00", bg: "#FABD0010", border: "#FABD0040" },
 };
 
+const growthCards = [
+  { icon: TrendingUp, color: "#056BFC", title: "Actively Hiring", desc: "We are growing our Earnix and AI practices. If you're a certified platform specialist or an AI enthusiast in insurance tech, we'd love to connect.", btn: "View Open Roles", btnStyle: { className: "bg-[#056BFC] hover:bg-[#056BFC]/90 text-white text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { icon: Star,       color: "#3FD534", title: "Certification Programme", desc: "Core TSC sponsors platform certifications for team members across all five competencies. Reach out to your competency lead for the current certification calendar.", btn: "Certification Calendar", btnStyle: { variant: "outline", className: "border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10 text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { icon: Users,      color: "#FABD00", title: "Onboarding Resources", desc: "New to Core TSC? Access onboarding decks, platform guides, accelerator walkthroughs, and team intros - all in one place.", btn: "Access Resources", btnStyle: { variant: "outline", className: "text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+];
+
 export default function Team() {
+  const { user } = useAuth();
+  const visibleTeamStats = filterContentForUser(teamStats, user);
+  const visibleCompetencyTeams = filterContentForUser(competencyTeams, user);
+  const visibleCapabilityAreas = filterContentForUser(capabilityAreas, user);
+  const visibleGrowthCards = filterContentForUser(growthCards, user);
+
   return (
     <div className="space-y-8">
 
@@ -123,7 +137,7 @@ export default function Team() {
 
           <motion.div className="grid grid-cols-2 gap-3"
             variants={container} initial="hidden" animate="show">
-            {teamStats.map((s) => {
+            {visibleTeamStats.map((s) => {
               const Icon = s.icon;
               return (
                 <motion.div key={s.label} variants={fadeUp}
@@ -151,7 +165,7 @@ export default function Team() {
         <motion.div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
           variants={container} initial="hidden"
           whileInView="show" viewport={{ once: true, amount: 0.1 }}>
-          {competencyTeams.map((team) => (
+          {visibleCompetencyTeams.map((team) => (
             <motion.div key={team.platform} variants={fadeUp}
               whileHover={{ y: -8, boxShadow: `0 20px 40px ${team.accent}30` }}>
               <Card className="h-full shadow-sm border-t-4" style={{ borderTopColor: team.accent }}>
@@ -196,6 +210,13 @@ export default function Team() {
               </Card>
             </motion.div>
           ))}
+          {visibleCompetencyTeams.length === 0 && (
+            <Card className="md:col-span-2 xl:col-span-3 border-border/50">
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No competency team cards are available for your account.
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
 
@@ -209,11 +230,11 @@ export default function Team() {
           </motion.h2>
           <Card className="shadow-sm">
             <CardContent className="p-0">
-              {capabilityAreas.map((cap, i) => {
+              {visibleCapabilityAreas.map((cap, i) => {
                 const style = strengthColors[cap.strength];
                 return (
                   <motion.div key={cap.area}
-                    className={`p-4 flex items-center justify-between gap-3 ${i !== capabilityAreas.length - 1 ? "border-b border-border/40" : ""}`}
+                    className={`p-4 flex items-center justify-between gap-3 ${i !== visibleCapabilityAreas.length - 1 ? "border-b border-border/40" : ""}`}
                     initial={{ opacity: 0, x: -16 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -247,11 +268,7 @@ export default function Team() {
             Growth & Hiring
           </motion.h2>
           <div className="space-y-4">
-            {[
-              { icon: TrendingUp, color: "#056BFC", title: "Actively Hiring", desc: "We are growing our Earnix and AI practices. If you're a certified platform specialist or an AI enthusiast in insurance tech, we'd love to connect.", btn: "View Open Roles", btnStyle: { className: "bg-[#056BFC] hover:bg-[#056BFC]/90 text-white text-xs" } },
-              { icon: Star,       color: "#3FD534", title: "Certification Programme", desc: "Core TSC sponsors platform certifications for team members across all five competencies. Reach out to your competency lead for the current certification calendar.", btn: "Certification Calendar", btnStyle: { variant: "outline", className: "border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10 text-xs" } },
-              { icon: Users,      color: "#FABD00", title: "Onboarding Resources", desc: "New to Core TSC? Access onboarding decks, platform guides, accelerator walkthroughs, and team intros — all in one place.", btn: "Access Resources", btnStyle: { variant: "outline", className: "text-xs" } },
-            ].map((card, i) => {
+            {visibleGrowthCards.map((card, i) => {
               const Icon = card.icon;
               return (
                 <motion.div key={card.title}

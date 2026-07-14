@@ -3,6 +3,8 @@ import { motion, useInView } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import {
   BotMessageSquare, Sparkles, Brain, Cpu, Zap, ArrowRight,
   FlaskConical, Layers, Shield, MessageSquare, ChevronRight,
@@ -58,6 +60,7 @@ const aiRoadmap = [
   {
     phase: "Phase 1", label: "Foundation & Exploration", timeline: "Q1–Q2 2025",
     status: "completed", color: "#056BFC",
+    contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL,
     items: [
       "Identify high-impact AI use cases across platforms",
       "Pilot GenAI code generation for Guidewire config",
@@ -68,6 +71,7 @@ const aiRoadmap = [
   {
     phase: "Phase 2", label: "Build & Accelerate", timeline: "Q3–Q4 2025",
     status: "in-progress", color: "#FABD00",
+    contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL,
     items: [
       "Launch AI-powered testing & regression suite",
       "Integrate LLMs into underwriting and claims workflows",
@@ -78,6 +82,7 @@ const aiRoadmap = [
   {
     phase: "Phase 3", label: "Scale & Industrialize", timeline: "2026",
     status: "planned", color: "#3FD534",
+    contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL,
     items: [
       "Embed AI natively across all 5 platform competencies",
       "Build reusable AI components for client engagements",
@@ -88,19 +93,19 @@ const aiRoadmap = [
 ];
 
 const aiOfferings = [
-  { icon: Brain,        title: "GenAI Underwriting Assistant",  platform: "Guidewire",            status: "Demo Ready",  statusColor: "#3FD534", description: "LLM-powered assistant that drafts underwriting rules, risk summaries, and policy recommendations from plain-language prompts." },
-  { icon: Zap,          title: "Automated Test Generation",     platform: "Multi-Platform",        status: "Demo Ready",  statusColor: "#3FD534", description: "AI generates regression test scripts from user stories and change logs, reducing manual QA effort by up to 60%." },
-  { icon: Cpu,          title: "Dynamic Pricing with Earnix AI",platform: "Earnix",                status: "In Progress", statusColor: "#FABD00", description: "ML models integrated with Earnix Price-It to deliver real-time personalised pricing recommendations." },
-  { icon: MessageSquare,title: "AI-Powered Claims Triage",      platform: "Guidewire ClaimCenter", status: "In Progress", statusColor: "#FABD00", description: "NLP-driven claims intake that auto-classifies severity, routes to adjusters, and flags fraud indicators." },
-  { icon: Layers,       title: "Migration Intelligence Tool",   platform: "Duck Creek / OneShield",status: "Planned",     statusColor: "#056BFC", description: "Analyses legacy codebase and generates migration runbooks, data mapping, and risk scores automatically." },
-  { icon: Shield,       title: "Compliance & Audit Copilot",    platform: "CCM",                   status: "Planned",     statusColor: "#056BFC", description: "Scans customer communications against regulatory requirements and suggests compliant alternatives in real time." },
+  { icon: Brain,        title: "GenAI Underwriting Assistant",  platform: "Guidewire",             status: "Demo Ready",  statusColor: "#3FD534", description: "LLM-powered assistant that drafts underwriting rules, risk summaries, and policy recommendations from plain-language prompts.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { icon: Zap,          title: "Automated Test Generation",     platform: "Multi-Platform",         status: "Demo Ready",  statusColor: "#3FD534", description: "AI generates regression test scripts from user stories and change logs, reducing manual QA effort by up to 60%.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { icon: Cpu,          title: "Dynamic Pricing with Earnix AI",platform: "Earnix",                 status: "In Progress", statusColor: "#FABD00", description: "ML models integrated with Earnix Price-It to deliver real-time personalised pricing recommendations.", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { icon: MessageSquare,title: "AI-Powered Claims Triage",      platform: "Guidewire ClaimCenter",  status: "In Progress", statusColor: "#FABD00", description: "NLP-driven claims intake that auto-classifies severity, routes to adjusters, and flags fraud indicators.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire ClaimCenter") },
+  { icon: Layers,       title: "Migration Intelligence Tool",   platform: "Duck Creek / OneShield", status: "Planned",     statusColor: "#056BFC", description: "Analyses legacy codebase and generates migration runbooks, data mapping, and risk scores automatically.", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek / OneShield") },
+  { icon: Shield,       title: "Compliance & Audit Copilot",    platform: "CCM",                    status: "Planned",     statusColor: "#056BFC", description: "Scans customer communications against regulatory requirements and suggests compliant alternatives in real time.", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
 ];
 
 const aiApproach = [
-  { label: "Prompt-Driven Configuration",    desc: "Use natural language to generate platform-specific configs, reducing manual effort." },
-  { label: "AI-Augmented Code Review",       desc: "Automated PR analysis flags anti-patterns and suggests best practices before human review." },
-  { label: "Intelligent Data Mapping",       desc: "ML models map legacy data schemas to target models, cutting migration discovery time." },
-  { label: "Conversational Knowledge Base",  desc: "RAG-based chatbot over internal accelerator and asset library for instant lookup." },
+  { label: "Prompt-Driven Configuration",    desc: "Use natural language to generate platform-specific configs, reducing manual effort.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "AI-Augmented Code Review",       desc: "Automated PR analysis flags anti-patterns and suggests best practices before human review.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Intelligent Data Mapping",       desc: "ML models map legacy data schemas to target models, cutting migration discovery time.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Conversational Knowledge Base",  desc: "RAG-based chatbot over internal accelerator and asset library for instant lookup.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 const statusIcon = (s) => {
@@ -110,6 +115,15 @@ const statusIcon = (s) => {
 };
 
 export default function AiPlatforms() {
+  const { user } = useAuth();
+  const visibleRoadmap = filterContentForUser(aiRoadmap, user);
+  const visibleAiOfferings = filterContentForUser(aiOfferings, user);
+  const visibleApproach = filterContentForUser(aiApproach, user);
+  const demoReadyCount = visibleAiOfferings.filter((offering) => offering.status === "Demo Ready").length;
+  const platformsCovered = new Set(
+    visibleAiOfferings.map((offering) => offering.contentAccessRole)
+  ).size;
+
   return (
     <div className="space-y-8">
 
@@ -170,9 +184,9 @@ export default function AiPlatforms() {
             variants={container} initial="hidden" animate="show"
           >
             {[
-              { label: "AI Use Cases",      value: "6" },
-              { label: "Demo Ready",        value: "2" },
-              { label: "Platforms Covered", value: "5" },
+              { label: "AI Use Cases",      value: String(visibleAiOfferings.length) },
+              { label: "Demo Ready",        value: String(demoReadyCount) },
+              { label: "Platforms Covered", value: String(platformsCovered) },
               { label: "Effort Saved",      value: "~60%" },
             ].map((s) => (
               <motion.div
@@ -203,7 +217,7 @@ export default function AiPlatforms() {
           variants={container} initial="hidden"
           whileInView="show" viewport={{ once: true, amount: 0.2 }}
         >
-          {aiRoadmap.map((phase) => (
+          {visibleRoadmap.map((phase) => (
             <motion.div
               key={phase.phase}
               variants={fadeUp}
@@ -256,7 +270,7 @@ export default function AiPlatforms() {
               <CardDescription>How we embed AI into delivery workflows</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {aiApproach.map((item, i) => (
+              {visibleApproach.map((item, i) => (
                 <motion.div
                   key={item.label}
                   className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0"
@@ -293,7 +307,7 @@ export default function AiPlatforms() {
             variants={container} initial="hidden"
             whileInView="show" viewport={{ once: true, amount: 0.1 }}
           >
-            {aiOfferings.map((offering) => {
+            {visibleAiOfferings.map((offering) => {
               const Icon = offering.icon;
               return (
                 <motion.div
@@ -326,6 +340,13 @@ export default function AiPlatforms() {
                 </motion.div>
               );
             })}
+            {visibleAiOfferings.length === 0 && (
+              <Card className="sm:col-span-2 border-border/50">
+                <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                  No AI offerings are available for your account.
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         </div>
       </div>

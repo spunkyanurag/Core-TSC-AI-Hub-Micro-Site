@@ -5,10 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { competencies, platformCoverage } from "@/mock-data";
+import { useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
 import { ChevronRight, Settings, Layers, Workflow, ShieldCheck, Box, Sparkles, Target } from "lucide-react";
 
 export default function Competencies() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const visibleCompetencies = filterContentForUser(competencies, user);
+  const visiblePlatformCoverage = filterContentForUser(platformCoverage, user);
 
   const handleCompetencyClick = (comp) => {
     if (comp.id === "earnix") {
@@ -32,8 +37,8 @@ export default function Competencies() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {competencies.map((comp, i) => {
-          const coverage = platformCoverage.find(p => p.platform === comp.name)?.coverage || 0;
+        {visibleCompetencies.map((comp, i) => {
+          const coverage = visiblePlatformCoverage.find(p => p.platform === comp.name)?.coverage || 0;
           const compGraphic = cardGraphics[comp.id] || { bg: "from-slate-500 via-slate-600 to-slate-900", icon: Layers, label: comp.name };
           const Icon = compGraphic.icon;
           
@@ -92,66 +97,75 @@ export default function Competencies() {
             </motion.div>
           );
         })}
+        {visibleCompetencies.length === 0 && (
+          <Card className="col-span-full border-border/50">
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No competency-specific content is available for your account.
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      <Card className="mt-8 border-border/50">
-        <CardHeader>
-          <CardTitle>Capability Matrix</CardTitle>
-          <CardDescription>Detailed breakdown of service offerings by platform</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="guidewire" className="w-full">
-            <TabsList className="w-full justify-start overflow-x-auto overflow-y-hidden border-b rounded-none bg-transparent p-0 h-auto">
-              {competencies.map(comp => (
-                <TabsTrigger 
-                  key={comp.id} 
-                  value={comp.id}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#056BFC] data-[state=active]:text-[#056BFC] data-[state=active]:bg-transparent px-4 py-3"
-                >
-                  {comp.name}
-                </TabsTrigger>
+      {visibleCompetencies.length > 0 && (
+        <Card className="mt-8 border-border/50">
+          <CardHeader>
+            <CardTitle>Capability Matrix</CardTitle>
+            <CardDescription>Detailed breakdown of service offerings by platform</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue={visibleCompetencies[0].id} className="w-full">
+              <TabsList className="w-full justify-start overflow-x-auto overflow-y-hidden border-b rounded-none bg-transparent p-0 h-auto">
+                {visibleCompetencies.map(comp => (
+                  <TabsTrigger
+                    key={comp.id}
+                    value={comp.id}
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#056BFC] data-[state=active]:text-[#056BFC] data-[state=active]:bg-transparent px-4 py-3"
+                  >
+                    {comp.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {visibleCompetencies.map(comp => (
+                <TabsContent key={comp.id} value={comp.id} className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 text-[#056BFC] font-medium">
+                        <Settings className="w-4 h-4" /> Implementation
+                      </div>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Core Systems Rollout</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Upgrades & Migrations</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Cloud Transitions</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 text-[#056BFC] font-medium">
+                        <Workflow className="w-4 h-4" /> Integration
+                      </div>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Third-party APIs</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Enterprise Service Bus</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Legacy System Bridging</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
+                      <div className="flex items-center gap-2 text-[#056BFC] font-medium">
+                        <ShieldCheck className="w-4 h-4" /> Managed Services
+                      </div>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> L2/L3 Support</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Performance Tuning</li>
+                        <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Release Management</li>
+                      </ul>
+                    </div>
+                  </div>
+                </TabsContent>
               ))}
-            </TabsList>
-            
-            {competencies.map(comp => (
-              <TabsContent key={comp.id} value={comp.id} className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
-                    <div className="flex items-center gap-2 text-[#056BFC] font-medium">
-                      <Settings className="w-4 h-4" /> Implementation
-                    </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Core Systems Rollout</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Upgrades & Migrations</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Cloud Transitions</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
-                    <div className="flex items-center gap-2 text-[#056BFC] font-medium">
-                      <Workflow className="w-4 h-4" /> Integration
-                    </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Third-party APIs</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Enterprise Service Bus</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Legacy System Bridging</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-4 p-4 rounded-lg bg-[#F8F8FB] dark:bg-muted/30 border border-border/50">
-                    <div className="flex items-center gap-2 text-[#056BFC] font-medium">
-                      <ShieldCheck className="w-4 h-4" /> Managed Services
-                    </div>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> L2/L3 Support</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Performance Tuning</li>
-                      <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3"/> Release Management</li>
-                    </ul>
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

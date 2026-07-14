@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import { Globe, Users, ArrowRight, Layers, BrainCircuit, Workflow, MessageSquare, ChevronRight, TrendingUp, Link2 } from "lucide-react";
 
-/* ── variants ────────────────────────────────────────────────── */
+/* variants */
 const container = {
   hidden: {},
   show: { transition: { staggerChildren: 0.1 } },
@@ -14,7 +16,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
 
-/* ── pulsing dot ─────────────────────────────────────────────── */
+/* pulsing dot */
 const PulseDot = ({ color }) => (
   <span className="relative inline-flex h-2 w-2 mr-1.5">
     <motion.span className="absolute inline-flex h-full w-full rounded-full opacity-75"
@@ -26,32 +28,49 @@ const PulseDot = ({ color }) => (
 );
 
 const crossTeamInitiatives = [
-  { title: "Advanced Analytics + Claims Center AI",    partners: ["Advanced Analytics TSC", "Guidewire Core"],         status: "Active",      statusColor: "#3FD534", outcomes: ["30% faster claim triage", "ML model in production", "Shared training dataset"], icon: BrainCircuit, accent: "#056BFC", description: "Joint initiative combining predictive analytics models with ClaimCenter to automatically score claim severity and recommend resolution paths." },
-  { title: "Earnix + Guidewire Integration Accelerator",partners: ["Guidewire Competency", "Earnix Competency"],        status: "Active",      statusColor: "#3FD534", outcomes: ["Reusable connector framework", "4 client engagements leveraged", "50% integration time saved"], icon: Link2, accent: "#3FD534", description: "Pre-built connector enabling real-time pricing calls from PolicyCenter to Earnix Price-It, eliminating custom integration effort for every engagement." },
-  { title: "AI Initiatives Across Competencies",       partners: ["All Core TSC Competencies", "Data & AI TSC"],        status: "In Progress", statusColor: "#FABD00", outcomes: ["Shared AI sandbox", "6 use cases identified", "Phase 2 roadmap defined"], icon: Workflow, accent: "#FABD00", description: "Cross-competency effort to embed AI tools — code generation, test automation, and GenAI assistants — uniformly across all platform practices." },
-  { title: "Omnichannel CX Modernisation",             partners: ["Digital TSC", "CCM Competency"],                     status: "In Progress", statusColor: "#FABD00", outcomes: ["CCM + portal reference architecture", "Compliance review complete", "Pilot client identified"], icon: MessageSquare, accent: "#056BFC", description: "Combining CCM platforms with digital experience frameworks to deliver personalised, compliant customer journeys across web, mobile, and print." },
+  { title: "Advanced Analytics + Claims Center AI",    partners: ["Advanced Analytics TSC", "Guidewire Core"],         status: "Active",      statusColor: "#3FD534", outcomes: ["30% faster claim triage", "ML model in production", "Shared training dataset"], icon: BrainCircuit, accent: "#056BFC", description: "Joint initiative combining predictive analytics models with ClaimCenter to automatically score claim severity and recommend resolution paths.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { title: "Earnix + Guidewire Integration Accelerator",partners: ["Guidewire Competency", "Earnix Competency"],        status: "Active",      statusColor: "#3FD534", outcomes: ["Reusable connector framework", "4 client engagements leveraged", "50% integration time saved"], icon: Link2, accent: "#3FD534", description: "Pre-built connector enabling real-time pricing calls from PolicyCenter to Earnix Price-It, eliminating custom integration effort for every engagement.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { title: "AI Initiatives Across Competencies",       partners: ["All Core TSC Competencies", "Data & AI TSC"],        status: "In Progress", statusColor: "#FABD00", outcomes: ["Shared AI sandbox", "6 use cases identified", "Phase 2 roadmap defined"], icon: Workflow, accent: "#FABD00", description: "Cross-competency effort to embed AI tools - code generation, test automation, and GenAI assistants - uniformly across all platform practices.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { title: "Omnichannel CX Modernisation",             partners: ["Digital TSC", "CCM Competency"],                     status: "In Progress", statusColor: "#FABD00", outcomes: ["CCM + portal reference architecture", "Compliance review complete", "Pilot client identified"], icon: MessageSquare, accent: "#056BFC", description: "Combining CCM platforms with digital experience frameworks to deliver personalised, compliant customer journeys across web, mobile, and print.", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
 ];
 
 const verticalCollabs = [
-  { vertical: "Commercial Lines",   initiatives: 3, platforms: ["Guidewire", "Duck Creek"], highlight: "Shared underwriting automation accelerator in active development" },
-  { vertical: "Personal Lines",     initiatives: 2, platforms: ["Earnix", "Guidewire"],     highlight: "Dynamic pricing integration deployed across 2 client projects" },
-  { vertical: "Specialty / MGA",    initiatives: 2, platforms: ["OneShield", "Duck Creek"], highlight: "MGA onboarding accelerator — reducing setup time by 40%" },
-  { vertical: "Claims & Operations",initiatives: 4, platforms: ["Guidewire", "CCM"],        highlight: "GenAI claims triage POC running in sandbox environment" },
+  { vertical: "Commercial Lines",   initiatives: 3, platforms: ["Guidewire", "Duck Creek"], highlight: "Shared underwriting automation accelerator in active development", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { vertical: "Personal Lines",     initiatives: 2, platforms: ["Earnix", "Guidewire"],     highlight: "Dynamic pricing integration deployed across 2 client projects", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { vertical: "Specialty / MGA",    initiatives: 2, platforms: ["OneShield", "Duck Creek"], highlight: "MGA onboarding accelerator - reducing setup time by 40%", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { vertical: "Claims & Operations",initiatives: 4, platforms: ["Guidewire", "CCM"],        highlight: "GenAI claims triage POC running in sandbox environment", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 const otherTSCs = [
-  { name: "Advanced Analytics TSC",      collab: "Predictive claims, risk scoring models",          status: "Active" },
-  { name: "Digital Experience TSC",      collab: "Omnichannel CX, portal modernisation",            status: "Active" },
-  { name: "Data & AI TSC",               collab: "Shared AI sandbox, LLM tooling",                  status: "Active" },
-  { name: "Cloud & Infrastructure TSC",  collab: "GW Cloud migration architecture",                 status: "Active" },
-  { name: "Testing CoE",                 collab: "Shared regression framework, shift-left testing", status: "In Discussion" },
+  { name: "Advanced Analytics TSC",      collab: "Predictive claims, risk scoring models",          status: "Active", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { name: "Digital Experience TSC",      collab: "Omnichannel CX, portal modernisation",            status: "Active", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+  { name: "Data & AI TSC",               collab: "Shared AI sandbox, LLM tooling",                  status: "Active", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { name: "Cloud & Infrastructure TSC",  collab: "GW Cloud migration architecture",                 status: "Active", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { name: "Testing CoE",                 collab: "Shared regression framework, shift-left testing", status: "In Discussion", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 export default function Collaboration() {
+  const { user } = useAuth();
+  const visibleCrossTeamInitiatives = filterContentForUser(crossTeamInitiatives, user);
+  const visibleVerticalCollabs = filterContentForUser(verticalCollabs, user);
+  const visibleOtherTSCs = filterContentForUser(otherTSCs, user);
+  const collaborationStats = [
+    {
+      label: "Active Initiatives",
+      value: String(visibleCrossTeamInitiatives.filter((item) => item.status === "Active").length),
+    },
+    { label: "TSC Partners", value: String(visibleOtherTSCs.length) },
+    { label: "Vertical Collabs", value: String(visibleVerticalCollabs.length) },
+    {
+      label: "Joint Outcomes",
+      value: `${visibleCrossTeamInitiatives.reduce((sum, item) => sum + item.outcomes.length, 0)}+`,
+    },
+  ];
+
   return (
     <div className="space-y-8">
 
-      {/* ── HERO ──────────────────────────────────────────────── */}
+      {/* HERO */}
       <motion.section
         initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -98,12 +117,7 @@ export default function Collaboration() {
             className="grid grid-cols-2 gap-3"
             variants={container} initial="hidden" animate="show"
           >
-            {[
-              { label: "Active Initiatives", value: "4" },
-              { label: "TSC Partners",       value: "5" },
-              { label: "Vertical Collabs",   value: "4" },
-              { label: "Joint Outcomes",     value: "12+" },
-            ].map((s) => (
+            {collaborationStats.map((s) => (
               <motion.div
                 key={s.label}
                 variants={fadeUp}
@@ -118,7 +132,7 @@ export default function Collaboration() {
         </div>
       </motion.section>
 
-      {/* ── CROSS-TEAM INITIATIVES ────────────────────────────── */}
+      {/* CROSS-TEAM INITIATIVES */}
       <div>
         <motion.h2 className="text-xl font-bold tracking-tight mb-4"
           initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }}
@@ -128,7 +142,7 @@ export default function Collaboration() {
         <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-5"
           variants={container} initial="hidden"
           whileInView="show" viewport={{ once: true, amount: 0.1 }}>
-          {crossTeamInitiatives.map((init) => {
+          {visibleCrossTeamInitiatives.map((init) => {
             const Icon = init.icon;
             return (
               <motion.div
@@ -177,10 +191,17 @@ export default function Collaboration() {
               </motion.div>
             );
           })}
+          {visibleCrossTeamInitiatives.length === 0 && (
+            <Card className="md:col-span-2 border-border/50">
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No cross-team initiatives are available for your account.
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
 
-      {/* ── VERTICALS + TSC LIST ──────────────────────────────── */}
+      {/* VERTICALS + TSC LIST */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <motion.h2 className="text-xl font-bold tracking-tight mb-4"
@@ -189,7 +210,7 @@ export default function Collaboration() {
             Collaboration with Verticals
           </motion.h2>
           <div className="space-y-3">
-            {verticalCollabs.map((v, i) => (
+            {visibleVerticalCollabs.map((v, i) => (
               <motion.div key={v.vertical}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -219,6 +240,13 @@ export default function Collaboration() {
                 </Card>
               </motion.div>
             ))}
+            {visibleVerticalCollabs.length === 0 && (
+              <Card className="border-border/50">
+                <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                  No vertical collaborations are available for your account.
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -230,9 +258,9 @@ export default function Collaboration() {
           </motion.h2>
           <Card className="shadow-sm h-fit">
             <CardContent className="p-0">
-              {otherTSCs.map((t, i) => (
+              {visibleOtherTSCs.map((t, i) => (
                 <motion.div key={t.name}
-                  className={`p-4 flex items-start gap-3 ${i !== otherTSCs.length - 1 ? "border-b border-border/40" : ""}`}
+                  className={`p-4 flex items-start gap-3 ${i !== visibleOtherTSCs.length - 1 ? "border-b border-border/40" : ""}`}
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -258,12 +286,17 @@ export default function Collaboration() {
                   </div>
                 </motion.div>
               ))}
+              {visibleOtherTSCs.length === 0 && (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No TSC collaborations are available for your account.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* ── CTA ───────────────────────────────────────────────── */}
+      {/* CTA */}
       <motion.div
         initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }} transition={{ duration: 0.45 }}

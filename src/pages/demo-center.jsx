@@ -4,9 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { PlaySquare, Calendar as CalendarIcon, Video, Users, Clock } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
+
+const featuredDemos = [
+  { title: "Guidewire Cloud Transition", duration: "45 mins", type: "Technical Deep Dive", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { title: "Earnix Pricing Engine Integration", duration: "30 mins", type: "Architecture Review", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { title: "Automated Testing Framework", duration: "60 mins", type: "Hands-on Workshop", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+];
 
 export default function DemoCenter() {
+  const { user } = useAuth();
   const [date, setDate] = useState(new Date());
+  const visibleDemos = filterContentForUser(featuredDemos, user);
 
   return (
     <div className="space-y-6">
@@ -23,11 +33,7 @@ export default function DemoCenter() {
               <CardDescription>Ready-to-present technical deep dives</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                { title: "Guidewire Cloud Transition", duration: "45 mins", type: "Technical Deep Dive" },
-                { title: "Earnix Pricing Engine Integration", duration: "30 mins", type: "Architecture Review" },
-                { title: "Automated Testing Framework", duration: "60 mins", type: "Hands-on Workshop" },
-              ].map((demo, i) => (
+              {visibleDemos.map((demo, i) => (
                 <motion.div 
                   key={demo.title}
                   initial={{ opacity: 0, y: 10 }}
@@ -47,6 +53,11 @@ export default function DemoCenter() {
                   </Button>
                 </motion.div>
               ))}
+              {visibleDemos.length === 0 && (
+                <div className="p-6 text-center text-sm text-muted-foreground">
+                  No demos are available for your account.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

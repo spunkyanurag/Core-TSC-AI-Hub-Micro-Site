@@ -3,9 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { innovations } from "@/mock-data";
+import { useAuth } from "@/auth";
+import { CONTENT_ACCESS_ROLE, filterContentForUser } from "@/lib/content-access";
 import { Lightbulb, ArrowRight, Beaker, Rocket, ArrowUpRight } from "lucide-react";
 
+const focusAreas = [
+  { title: "Generative AI", desc: "LLMs for underwriting and claims", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { title: "Predictive Analytics", desc: "ML models for risk assessment", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { title: "IoT & Telematics", desc: "Real-time data streaming", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { title: "Cloud Native Architecture", desc: "Serverless and microservices", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+];
+
 export default function Innovation() {
+  const { user } = useAuth();
+  const visibleInnovations = filterContentForUser(innovations, user);
+  const visibleFocusAreas = filterContentForUser(focusAreas, user);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -20,7 +33,7 @@ export default function Innovation() {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         <div className="md:col-span-8 space-y-6">
-          {innovations.map((innovation, i) => (
+          {visibleInnovations.map((innovation, i) => (
             <motion.div
               key={innovation.id}
               initial={{ opacity: 0, x: -20 }}
@@ -54,6 +67,13 @@ export default function Innovation() {
               </Card>
             </motion.div>
           ))}
+          {visibleInnovations.length === 0 && (
+            <Card className="border-border/50">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                No innovation items are available for your account.
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="md:col-span-4 space-y-6">
@@ -62,12 +82,7 @@ export default function Innovation() {
               <CardTitle>Focus Areas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[
-                { title: "Generative AI", desc: "LLMs for underwriting and claims" },
-                { title: "Predictive Analytics", desc: "ML models for risk assessment" },
-                { title: "IoT & Telematics", desc: "Real-time data streaming" },
-                { title: "Cloud Native Architecture", desc: "Serverless and microservices" }
-              ].map((area) => (
+              {visibleFocusAreas.map((area) => (
                 <div key={area.title} className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0">
                   <div className="p-2 bg-[#056BFC]/10 rounded-md text-[#056BFC] mt-1">
                     <ArrowRight className="w-3 h-3" />

@@ -4,6 +4,9 @@ import { ArrowLeft, FileText, NotebookText, PlaySquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/auth";
+import { ContentAccessDenied } from "@/components/content-access-denied";
+import { CONTENT_ACCESS_ROLE, userCanViewContent } from "@/lib/content-access";
 
 const earnixResources = [
   {
@@ -11,23 +14,31 @@ const earnixResources = [
     description: "Launch the Earnix product demo and walkthrough.",
     route: "/earnix-demos",
     icon: PlaySquare,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "Playbook",
     description: "Open the implementation playbook and delivery guidance.",
     href: "https://vmivsp.sharepoint.com/:w:/r/sites/CoreLeverage/_layouts/15/Doc.aspx?sourcedoc=%7BF6D1FFEC-E7D8-47D0-B7E1-7A538C1093AC%7D&file=Earnix%20Development%20Playbook%20V1.docx&action=default&mobileredirect=true",
     icon: NotebookText,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
   {
     title: "Materials",
     description: "Browse supporting assets, decks, and technical notes.",
     href: "https://vmivsp.sharepoint.com/sites/CoreLeverage/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FCoreLeverage%2FShared%20Documents%2FGeneral%2FTraining%2FEarnix%2FEarnix%20Materials%2FEarnix%20Training%20PPT%27s&viewid=e2080b0c%2Df3a8%2D437b%2Da657%2D7ee3ad648a5d&CID=c3a2c27b%2Dfc0a%2Dfd86%2D6a23%2D1db143cfa62a&sharingv2=true&fromShare=true&at=9&FolderCTID=0x012000590E2BA52A0EB742A691C13C41D38C2E&ovuser=13085c86%2D4bcb%2D460a%2Da6f0%2Db373421c6323%2CSampath%2EPolisetty%40valuemomentum%2Ecom&OR=Teams%2DHL&CT=1771821426188&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNjAxMTUxMTExOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D",
     icon: FileText,
+    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
   },
 ];
 
 export default function EarnixResources() {
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
+
+  if (!userCanViewContent(user, CONTENT_ACCESS_ROLE.EARNIX)) {
+    return <ContentAccessDenied contentAccessRole={CONTENT_ACCESS_ROLE.EARNIX} />;
+  }
 
   const openResource = (href) => {
     window.open(href, "_blank", "noopener,noreferrer");
