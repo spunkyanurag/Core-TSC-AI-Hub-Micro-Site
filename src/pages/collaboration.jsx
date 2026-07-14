@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/auth";
+import { PERMISSIONS, useAuth } from "@/auth";
 import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import { Globe, Users, ArrowRight, Layers, BrainCircuit, Workflow, MessageSquare, ChevronRight, TrendingUp, Link2 } from "lucide-react";
 
@@ -50,7 +50,7 @@ const otherTSCs = [
 ];
 
 export default function Collaboration() {
-  const { user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   const visibleCrossTeamInitiatives = filterContentForUser(crossTeamInitiatives, user);
   const visibleVerticalCollabs = filterContentForUser(verticalCollabs, user);
   const visibleOtherTSCs = filterContentForUser(otherTSCs, user);
@@ -66,6 +66,7 @@ export default function Collaboration() {
       value: `${visibleCrossTeamInitiatives.reduce((sum, item) => sum + item.outcomes.length, 0)}+`,
     },
   ];
+  const canManageContent = hasPermissions([PERMISSIONS.MANAGE_CONTENT]);
 
   return (
     <div className="space-y-8">
@@ -106,11 +107,13 @@ export default function Collaboration() {
             <p className="text-white/75 text-base md:text-lg max-w-xl leading-relaxed">
               Cross-team initiatives, vertical collaborations, and joint solutions that multiply the impact of Core TSC across ValueMomentum.
             </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Button className="bg-[#3FD534] hover:bg-[#3FD534]/90 text-[#032b1a] font-semibold">
-                <Users className="w-4 h-4 mr-2" /> Propose Collaboration
-              </Button>
-            </motion.div>
+            {canManageContent && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button className="bg-[#3FD534] hover:bg-[#3FD534]/90 text-[#032b1a] font-semibold">
+                  <Users className="w-4 h-4 mr-2" /> Propose Collaboration
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div
@@ -297,30 +300,32 @@ export default function Collaboration() {
       </div>
 
       {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }} transition={{ duration: 0.45 }}
-        whileHover={{ scale: 1.01 }}>
-        <Card className="shadow-sm border-[#3FD534]/20 bg-gradient-to-r from-[#3FD534]/6 to-transparent overflow-hidden relative">
-          <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#3FD534]/8 to-transparent"
-            animate={{ x: ["-100%", "100%"] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
-          <CardContent className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-6 h-6 text-[#3FD534] shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Have a joint initiative in mind?</h3>
-                <p className="text-sm text-muted-foreground mt-1">Reach out to the Core TSC collaboration lead to start a conversation about cross-team opportunities.</p>
+      {canManageContent && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.45 }}
+          whileHover={{ scale: 1.01 }}>
+          <Card className="shadow-sm border-[#3FD534]/20 bg-gradient-to-r from-[#3FD534]/6 to-transparent overflow-hidden relative">
+            <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#3FD534]/8 to-transparent"
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
+            <CardContent className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-6 h-6 text-[#3FD534] shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold">Have a joint initiative in mind?</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Reach out to the Core TSC collaboration lead to start a conversation about cross-team opportunities.</p>
+                </div>
               </div>
-            </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Button variant="outline" className="shrink-0 border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10">
-                <MessageSquare className="w-4 h-4 mr-2" /> Start a Conversation
-              </Button>
-            </motion.div>
-          </CardContent>
-        </Card>
-      </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button variant="outline" className="shrink-0 border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10">
+                  <MessageSquare className="w-4 h-4 mr-2" /> Start a Conversation
+                </Button>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }

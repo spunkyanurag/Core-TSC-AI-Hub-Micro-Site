@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { innovations } from "@/mock-data";
-import { useAuth } from "@/auth";
+import { PERMISSIONS, useAuth } from "@/auth";
 import { CONTENT_ACCESS_ROLE, filterContentForUser } from "@/lib/content-access";
 import { Lightbulb, ArrowRight, Beaker, Rocket, ArrowUpRight } from "lucide-react";
 
@@ -15,9 +15,10 @@ const focusAreas = [
 ];
 
 export default function Innovation() {
-  const { user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   const visibleInnovations = filterContentForUser(innovations, user);
   const visibleFocusAreas = filterContentForUser(focusAreas, user);
+  const canManageContent = hasPermissions([PERMISSIONS.MANAGE_CONTENT]);
 
   return (
     <div className="space-y-6">
@@ -26,9 +27,11 @@ export default function Innovation() {
           <h1 className="text-3xl font-bold tracking-tight">Innovation Lab</h1>
           <p className="text-muted-foreground mt-2">Next-generation R&D initiatives and emerging technology experiments.</p>
         </div>
-        <Button className="bg-[#056BFC] hover:bg-[#056BFC]/90 text-white">
-          <Lightbulb className="w-4 h-4 mr-2" /> Submit Idea
-        </Button>
+        {canManageContent && (
+          <Button className="bg-[#056BFC] hover:bg-[#056BFC]/90 text-white">
+            <Lightbulb className="w-4 h-4 mr-2" /> Submit Idea
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { COMPETENCY_ADMIN_ROLES, MockAuthService, ROLES, useAuth } from "@/auth";
+import { MockAuthService, ROLES, useAuth } from "@/auth";
 
 const LogoLight = "/assets/logo-light.png";
-const COMPETENCY_ADMIN_LOGIN_ROLE = "Competency Admin";
+const COMPETENCY_ADMIN_LOGIN_ROLE = MockAuthService.COMPETENCY_ADMIN_LOGIN_ROLE;
 
 const ROLE_OPTIONS = [
   {
@@ -31,16 +31,6 @@ const ROLE_OPTIONS = [
   },
 ];
 
-function userMatchesLoginRole(user, role) {
-  if (role === COMPETENCY_ADMIN_LOGIN_ROLE) {
-    return user.roles.some((userRole) =>
-      COMPETENCY_ADMIN_ROLES.includes(userRole)
-    );
-  }
-
-  return user.roles.includes(role);
-}
-
 function getRedirectPath() {
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get("redirect");
@@ -54,7 +44,12 @@ export default function Login() {
   const mockUsers = useMemo(() => MockAuthService.getMockUsers(), []);
   const [selectedRole, setSelectedRole] = useState(ROLES.SUPER_ADMIN);
   const roleUsers = useMemo(
-    () => mockUsers.filter((user) => userMatchesLoginRole(user, selectedRole)),
+    () =>
+      mockUsers.filter(
+        (user) =>
+          user.isActive &&
+          MockAuthService.userMatchesLoginRole(user, selectedRole)
+      ),
     [mockUsers, selectedRole]
   );
   const [email, setEmail] = useState(
@@ -62,6 +57,7 @@ export default function Login() {
       mockUsers[0]?.email ||
       ""
   );
+  const [password, setPassword] = useState(MockAuthService.DEFAULT_PASSWORD);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -74,16 +70,31 @@ export default function Login() {
   function handleRoleChange(role) {
     setError("");
     setSelectedRole(role);
-    setEmail(mockUsers.find((user) => userMatchesLoginRole(user, role))?.email || "");
+    setEmail(
+      mockUsers.find(
+        (user) =>
+          user.isActive &&
+          MockAuthService.userMatchesLoginRole(user, role)
+      )?.email || ""
+    );
+    setPassword(MockAuthService.DEFAULT_PASSWORD);
   }
 
-  async function handleLogin(event, emailOverride = email) {
+  async function handleLogin(
+    event,
+    emailOverride = email,
+    passwordOverride = password
+  ) {
     event?.preventDefault();
     setError("");
     setIsSubmitting(true);
 
     try {
-      await login({ email: emailOverride, role: selectedRole });
+      await login({
+        email: emailOverride,
+        password: passwordOverride,
+        role: selectedRole,
+      });
       navigate(getRedirectPath(), { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -101,11 +112,16 @@ export default function Login() {
     }
 
     setEmail(demoUser.email);
+    setPassword(MockAuthService.DEFAULT_PASSWORD);
     setError("");
     setIsSubmitting(true);
 
     try {
-      await login({ email: demoUser.email, role: selectedRole });
+      await login({
+        email: demoUser.email,
+        password: MockAuthService.DEFAULT_PASSWORD,
+        role: selectedRole,
+      });
       navigate(getRedirectPath(), { replace: true });
     } catch (loginError) {
       setError(loginError.message);
@@ -209,7 +225,7 @@ export default function Login() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     autoComplete="email"
-                    placeholder={selectedRole === ROLES.VIEWER ? "Enter any email address" : undefined}
+                    placeholder="Enter your email address"
                   />
                   <datalist id="mock-users">
                     {roleUsers.map((user) => (
@@ -242,6 +258,21 @@ export default function Login() {
                       ? "Continue as Viewer"
                       : "Use selected role account"}
                   </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Demo users use password: password
+                  </p>
                 </div>
               </form>
             </CardContent>

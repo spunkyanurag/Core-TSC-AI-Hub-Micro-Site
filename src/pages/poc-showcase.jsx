@@ -3,13 +3,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { pocs } from "@/mock-data";
-import { useAuth } from "@/auth";
+import { PERMISSIONS, useAuth } from "@/auth";
 import { filterContentForUser } from "@/lib/content-access";
 import { FlaskConical, Play, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 export default function PocShowcase() {
-  const { user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   const visiblePocs = filterContentForUser(pocs, user);
+  const canManageContent = hasPermissions([PERMISSIONS.MANAGE_CONTENT]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -36,9 +37,11 @@ export default function PocShowcase() {
           <h1 className="text-3xl font-bold tracking-tight">POC Showcase</h1>
           <p className="text-muted-foreground mt-2">Interactive demonstrations of our capabilities and solutions.</p>
         </div>
-        <Button className="bg-[#056BFC] hover:bg-[#056BFC]/90 text-white">
-          <FlaskConical className="w-4 h-4 mr-2" /> Request Custom POC
-        </Button>
+        {canManageContent && (
+          <Button className="bg-[#056BFC] hover:bg-[#056BFC]/90 text-white">
+            <FlaskConical className="w-4 h-4 mr-2" /> Request Custom POC
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

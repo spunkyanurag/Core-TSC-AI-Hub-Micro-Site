@@ -6,51 +6,141 @@ import {
 } from "@/auth/permissions";
 
 const SESSION_STORAGE_KEY = "tsc-hub.mock-auth.session";
+const USER_STORAGE_KEY = "tsc-hub.mock-auth.users";
 const COMPETENCY_ADMIN_LOGIN_ROLE = "Competency Admin";
+const DEFAULT_PASSWORD = "password";
+const ALL_COMPETENCIES = "All";
 
-function withPermissions(user) {
+const LEGACY_COMPETENCY_ROLE_MAP = {
+  "Guidewire Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "Earnix Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "Duck Creek Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "OneShield Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "CCM Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "Guidewire Admin": ROLES.COMPETENCY_ADMIN,
+  "Earnix Admin": ROLES.COMPETENCY_ADMIN,
+  "Duck Creek Admin": ROLES.COMPETENCY_ADMIN,
+  "OneShield Admin": ROLES.COMPETENCY_ADMIN,
+  "CCM Admin": ROLES.COMPETENCY_ADMIN,
+};
+
+function canUseStorage() {
+  return typeof window !== "undefined" && Boolean(window.localStorage);
+}
+
+function normalizeRole(role) {
+  return LEGACY_COMPETENCY_ROLE_MAP[role] || role;
+}
+
+function normalizeRoles(roles = []) {
+  const normalizedRoles = roles.map(normalizeRole).filter(Boolean);
+  return normalizedRoles.length ? Array.from(new Set(normalizedRoles)) : [ROLES.VIEWER];
+}
+
+function normalizeCompetencies(user) {
+  const competencies = Array.isArray(user.competencies) ? user.competencies : [];
+
+  if (user.roles?.includes(ROLES.SUPER_ADMIN)) {
+    return [ALL_COMPETENCIES];
+  }
+
+  if (user.roles?.includes(ROLES.VIEWER) && competencies.length === 0) {
+    return [ALL_COMPETENCIES];
+  }
+
+  return Array.from(new Set(competencies));
+}
+
+function normalizeUser(user) {
+  const roles = normalizeRoles(user.roles);
+
+  return {
+    id: user.id || `usr-${globalThis.crypto?.randomUUID?.() || Date.now()}`,
+    name: user.name?.trim() || "Unnamed User",
+    email: user.email?.trim() || "",
+    title: user.title?.trim() || roles[0],
+    department: user.department?.trim() || "ValueMomentum",
+    avatarUrl: user.avatarUrl || "",
+    joinedOn: user.joinedOn || new Date().toISOString().slice(0, 10),
+    isActive: user.isActive !== false,
+    roles,
+    competencies: normalizeCompetencies({ ...user, roles }),
+    password: user.password || DEFAULT_PASSWORD,
+  };
+}
+
+function sanitizeUser(user) {
   if (!user) {
     return null;
   }
 
+  const { password, ...safeUser } = normalizeUser(user);
+  return safeUser;
+}
+
+function withPermissions(user) {
+  const safeUser = sanitizeUser(user);
+
+  if (!safeUser) {
+    return null;
+  }
+
   return {
-    ...user,
-    permissions: getPermissionsForRoles(user.roles),
+    ...safeUser,
+    permissions: getPermissionsForRoles(safeUser.roles),
   };
 }
 
+function getSeedUsers() {
+  return authData.mockUsers.map(normalizeUser);
+}
+
+function readUsers() {
+  if (!canUseStorage()) {
+    return getSeedUsers();
+  }
+
+  const storedUsers = window.localStorage.getItem(USER_STORAGE_KEY);
+
+  if (!storedUsers) {
+    const seedUsers = getSeedUsers();
+    writeUsers(seedUsers);
+    return seedUsers;
+  }
+
+  try {
+    return JSON.parse(storedUsers).map(normalizeUser);
+  } catch {
+    const seedUsers = getSeedUsers();
+    writeUsers(seedUsers);
+    return seedUsers;
+  }
+}
+
+function writeUsers(users) {
+  if (canUseStorage()) {
+    window.localStorage.setItem(
+      USER_STORAGE_KEY,
+      JSON.stringify(users.map(normalizeUser))
+    );
+  }
+}
+
 function findUserByEmail(email) {
-  return authData.mockUsers.find(
+  return readUsers().find(
     (user) => user.email.toLowerCase() === email.toLowerCase()
   );
 }
 
-function getDisplayNameFromEmail(email) {
-  const localPart = email.split("@")[0] || "Viewer";
-
-  return localPart
-    .split(/[._-]/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function createViewerUser(email) {
-  return {
-    id: `viewer-${email.toLowerCase()}`,
-    name: getDisplayNameFromEmail(email),
-    email,
-    title: "Viewer",
-    department: "ValueMomentum",
-    avatarUrl: "",
-    joinedOn: "2026-07-14",
-    isActive: true,
-    roles: [ROLES.VIEWER],
-    competencies: [],
-  };
+function findUserById(id) {
+  return readUsers().find((user) => user.id === id);
 }
 
 function readSession() {
+  if (!canUseStorage()) {
+    return null;
+  }
+
   const sessionValue = window.localStorage.getItem(SESSION_STORAGE_KEY);
 
   if (!sessionValue) {
@@ -65,10 +155,20 @@ function readSession() {
 }
 
 function writeSession(user) {
+  if (!canUseStorage()) {
+    return;
+  }
+
   window.localStorage.setItem(
     SESSION_STORAGE_KEY,
     JSON.stringify({ email: user.email, role: user.roles[0] })
   );
+}
+
+function clearSession() {
+  if (canUseStorage()) {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  }
 }
 
 function userMatchesLoginRole(user, role) {
@@ -85,7 +185,76 @@ function userMatchesLoginRole(user, role) {
   return user.roles.includes(role);
 }
 
+function validateUniqueEmail(email, currentUserId) {
+  const existingUser = readUsers().find(
+    (user) =>
+      user.email.toLowerCase() === email.toLowerCase() &&
+      user.id !== currentUserId
+  );
+
+  if (existingUser) {
+    throw new Error("A user with this email address already exists.");
+  }
+}
+
+function validateManagedUser(user) {
+  if (!user.name?.trim()) {
+    throw new Error("Name is required.");
+  }
+
+  if (!user.email?.trim()) {
+    throw new Error("Email address is required.");
+  }
+
+  if (!user.roles?.length) {
+    throw new Error("Assigned role is required.");
+  }
+
+  if (
+    user.roles.includes(ROLES.COMPETENCY_ADMIN) &&
+    !user.competencies?.length
+  ) {
+    throw new Error("Assign at least one competency to a Competency Admin.");
+  }
+}
+
+function getActiveSuperAdminCount(users) {
+  return users.filter(
+    (user) => user.isActive && user.roles.includes(ROLES.SUPER_ADMIN)
+  ).length;
+}
+
+function protectLastSuperAdmin(nextUsers) {
+  if (getActiveSuperAdminCount(nextUsers) < 1) {
+    throw new Error("At least one active Super Admin is required.");
+  }
+}
+
+function toManagedUser(input, existingUser) {
+  const role = normalizeRole(input.role || input.roles?.[0] || existingUser?.roles?.[0]);
+  const roles = [role];
+  const roleChanged = role !== existingUser?.roles?.[0];
+  const competencies =
+    role === ROLES.SUPER_ADMIN
+      ? [ALL_COMPETENCIES]
+      : Array.from(new Set(input.competencies || existingUser?.competencies || []));
+
+  return normalizeUser({
+    ...existingUser,
+    ...input,
+    title: input.title || (roleChanged ? role : existingUser?.title) || role,
+    roles,
+    competencies,
+    password: input.password || existingUser?.password || DEFAULT_PASSWORD,
+  });
+}
+
 export const MockAuthService = {
+  DEFAULT_PASSWORD,
+  COMPETENCY_ADMIN_LOGIN_ROLE,
+
+  userMatchesLoginRole,
+
   async getCurrentUser() {
     const session = readSession();
 
@@ -93,37 +262,43 @@ export const MockAuthService = {
       return null;
     }
 
-    if (session.role === ROLES.VIEWER) {
-      return withPermissions(createViewerUser(session.email));
-    }
-
     const user = findUserByEmail(session.email);
 
-    if (user) {
-      return withPermissions(user);
+    if (!user || !user.isActive) {
+      clearSession();
+      return null;
     }
 
-    return null;
+    return withPermissions(user);
   },
 
-  async login({ email, role }) {
+  async login({ email, password, role }) {
     const normalizedEmail = email?.trim();
 
     if (!normalizedEmail) {
       throw new Error("Enter an email address to continue.");
     }
 
-    const user =
-      role === ROLES.VIEWER
-        ? createViewerUser(normalizedEmail)
-        : findUserByEmail(normalizedEmail);
+    if (!password) {
+      throw new Error("Enter your password to continue.");
+    }
+
+    const user = findUserByEmail(normalizedEmail);
 
     if (!user) {
-      throw new Error("No mock user exists for this email address.");
+      throw new Error("No user exists for this email address.");
+    }
+
+    if (!user.isActive) {
+      throw new Error("This user account is inactive.");
     }
 
     if (!userMatchesLoginRole(user, role)) {
       throw new Error(`This account is not configured as ${role}. Choose a matching user type or account.`);
+    }
+
+    if (user.password !== password) {
+      throw new Error("Invalid email or password.");
     }
 
     writeSession(user);
@@ -131,14 +306,73 @@ export const MockAuthService = {
   },
 
   async loginAsDefaultUser() {
-    return this.login({ email: authData.defaultUserEmail });
+    return this.login({
+      email: authData.defaultUserEmail,
+      password: DEFAULT_PASSWORD,
+      role: ROLES.SUPER_ADMIN,
+    });
   },
 
   async logout() {
-    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    clearSession();
   },
 
   getMockUsers() {
-    return authData.mockUsers.map(withPermissions);
+    return readUsers().map(withPermissions);
+  },
+
+  getUser(id) {
+    return withPermissions(findUserById(id));
+  },
+
+  createUser(input) {
+    const nextUser = toManagedUser(input);
+    validateManagedUser(nextUser);
+    validateUniqueEmail(nextUser.email);
+
+    const users = [...readUsers(), nextUser];
+    protectLastSuperAdmin(users);
+    writeUsers(users);
+    return withPermissions(nextUser);
+  },
+
+  updateUser(id, input) {
+    const users = readUsers();
+    const existingUser = users.find((user) => user.id === id);
+
+    if (!existingUser) {
+      throw new Error("User not found.");
+    }
+
+    const nextUser = toManagedUser(input, existingUser);
+    validateManagedUser(nextUser);
+    validateUniqueEmail(nextUser.email, id);
+
+    const nextUsers = users.map((user) => (user.id === id ? nextUser : user));
+    protectLastSuperAdmin(nextUsers);
+    writeUsers(nextUsers);
+    return withPermissions(nextUser);
+  },
+
+  deleteUser(id) {
+    const users = readUsers();
+    const nextUsers = users.filter((user) => user.id !== id);
+
+    if (nextUsers.length === users.length) {
+      throw new Error("User not found.");
+    }
+
+    protectLastSuperAdmin(nextUsers);
+    writeUsers(nextUsers);
+  },
+
+  setUserActive(id, isActive) {
+    return this.updateUser(id, { isActive });
+  },
+
+  resetUsers() {
+    const seedUsers = getSeedUsers();
+    writeUsers(seedUsers);
+    return seedUsers.map(withPermissions);
   },
 };

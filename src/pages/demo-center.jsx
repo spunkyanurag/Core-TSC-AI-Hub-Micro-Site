@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { PlaySquare, Calendar as CalendarIcon, Video, Users, Clock } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/auth";
+import { PERMISSIONS, useAuth } from "@/auth";
 import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 
 const featuredDemos = [
@@ -14,9 +14,10 @@ const featuredDemos = [
 ];
 
 export default function DemoCenter() {
-  const { user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   const [date, setDate] = useState(new Date());
   const visibleDemos = filterContentForUser(featuredDemos, user);
+  const canManageContent = hasPermissions([PERMISSIONS.MANAGE_CONTENT]);
 
   return (
     <div className="space-y-6">
@@ -48,9 +49,11 @@ export default function DemoCenter() {
                       <span className="flex items-center"><Video className="w-3 h-3 mr-1" /> {demo.type}</span>
                     </div>
                   </div>
-                  <Button variant="outline" className="shrink-0 text-[#056BFC] border-[#056BFC]/20 hover:bg-[#056BFC]/10">
-                    <PlaySquare className="w-4 h-4 mr-2" /> Request
-                  </Button>
+                  {canManageContent && (
+                    <Button variant="outline" className="shrink-0 text-[#056BFC] border-[#056BFC]/20 hover:bg-[#056BFC]/10">
+                      <PlaySquare className="w-4 h-4 mr-2" /> Request
+                    </Button>
+                  )}
                 </motion.div>
               ))}
               {visibleDemos.length === 0 && (
@@ -75,7 +78,9 @@ export default function DemoCenter() {
                 className="rounded-md border mx-auto"
               />
               <div className="mt-6 space-y-4">
-                <Button className="w-full bg-[#056BFC] hover:bg-[#056BFC]/90 text-white"><CalendarIcon className="w-4 h-4 mr-2"/> Confirm Date</Button>
+                {canManageContent && (
+                  <Button className="w-full bg-[#056BFC] hover:bg-[#056BFC]/90 text-white"><CalendarIcon className="w-4 h-4 mr-2"/> Confirm Date</Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -87,7 +92,9 @@ export default function DemoCenter() {
               </div>
               <h3 className="font-semibold text-lg">Need a custom demo?</h3>
               <p className="text-sm text-muted-foreground">Our architects can prepare a tailored presentation for your specific use case.</p>
-              <Button variant="outline" className="w-full border-[#056BFC]/50 text-[#056BFC] hover:bg-[#056BFC]/10">Contact Team</Button>
+              {canManageContent && (
+                <Button variant="outline" className="w-full border-[#056BFC]/50 text-[#056BFC] hover:bg-[#056BFC]/10">Contact Team</Button>
+              )}
             </CardContent>
           </Card>
         </div>

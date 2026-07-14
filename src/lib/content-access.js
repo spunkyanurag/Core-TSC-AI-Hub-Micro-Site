@@ -59,7 +59,7 @@ export function getUserContentAccessRoles(user) {
     return [];
   }
 
-  if (isSuperAdmin(user)) {
+  if (isSuperAdmin(user) || user.competencies?.includes("All")) {
     return contentAccessRoles.map((role) => role.name);
   }
 

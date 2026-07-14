@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/auth";
+import { PERMISSIONS, useAuth } from "@/auth";
 import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
 import { Handshake, ExternalLink, Star, Building2, Globe, ArrowRight, ShieldCheck, TrendingUp } from "lucide-react";
 
@@ -65,7 +65,7 @@ const stats = [
 ];
 
 export default function Partnerships() {
-  const { user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   const visiblePartnerTiers = partnerTiers
     .map((tier) => ({
       ...tier,
@@ -74,6 +74,7 @@ export default function Partnerships() {
     .filter((tier) => tier.partners.length > 0);
   const visibleMarketplaceListings = filterContentForUser(marketplaceListings, user);
   const visibleStats = filterContentForUser(stats, user);
+  const canManageContent = hasPermissions([PERMISSIONS.MANAGE_CONTENT]);
 
   return (
     <div className="space-y-8">
@@ -277,31 +278,33 @@ export default function Partnerships() {
       </div>
 
       {/* ── CTA ───────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }} transition={{ duration: 0.45 }}
-        whileHover={{ scale: 1.01 }}
-      >
-        <Card className="shadow-sm border-[#FABD00]/30 bg-gradient-to-r from-[#FABD00]/8 to-transparent overflow-hidden relative">
-          <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FABD00]/8 to-transparent"
-            animate={{ x: ["-100%", "100%"] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
-          <CardContent className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-6 h-6 text-[#FABD00] shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold">Grow our marketplace presence</h3>
-                <p className="text-sm text-muted-foreground mt-1">Have an accelerator ready to list? Work with the partnerships team to submit it for platform review.</p>
+      {canManageContent && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }} transition={{ duration: 0.45 }}
+          whileHover={{ scale: 1.01 }}
+        >
+          <Card className="shadow-sm border-[#FABD00]/30 bg-gradient-to-r from-[#FABD00]/8 to-transparent overflow-hidden relative">
+            <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FABD00]/8 to-transparent"
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
+            <CardContent className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-6 h-6 text-[#FABD00] shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold">Grow our marketplace presence</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Have an accelerator ready to list? Work with the partnerships team to submit it for platform review.</p>
+                </div>
               </div>
-            </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Button variant="outline" className="shrink-0 border-[#FABD00] text-[#FABD00] hover:bg-[#FABD00]/10">
-                Submit Accelerator
-              </Button>
-            </motion.div>
-          </CardContent>
-        </Card>
-      </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Button variant="outline" className="shrink-0 border-[#FABD00] text-[#FABD00] hover:bg-[#FABD00]/10">
+                  Submit Accelerator
+                </Button>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }
