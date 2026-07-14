@@ -15,14 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { COMPETENCY_ADMIN_ROLES, MockAuthService, ROLES } from "@/auth";
 import { CONTENT_ACCESS_ROLES, CONTENT_ACCESS_ROLE_GENERAL } from "@/lib/content-access";
@@ -175,14 +167,11 @@ export default function UserManagement() {
     setUsers(MockAuthService.getMockUsers());
   }
 
-  function handleDialogOpenChange(open) {
-    setIsDialogOpen(open);
-
-    if (!open) {
-      setEditingUser(null);
-      setForm(getEmptyForm());
-      setFormError("");
-    }
+  function closeUserForm() {
+    setIsDialogOpen(false);
+    setEditingUser(null);
+    setForm(getEmptyForm());
+    setFormError("");
   }
 
   function openCreateDialog() {
@@ -300,7 +289,7 @@ export default function UserManagement() {
       setRoleFilter("all");
       setCompetencyFilter("all");
       setStatusFilter("all");
-      setIsDialogOpen(false);
+      closeUserForm();
     } catch (error) {
       setFormError(error.message);
     }
@@ -406,6 +395,103 @@ export default function UserManagement() {
         </div>
       </section>
 
+      {isDialogOpen && (
+        <section className="rounded-lg border bg-card p-5 shadow-sm">
+          <div className="mb-5">
+            <h3 className="text-xl font-semibold text-[#303030] dark:text-white">
+              {editingUser ? "Update User" : "Create User"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Role and competency assignments drive login, navigation, and content authorization.
+            </p>
+          </div>
+
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <label className="space-y-2 text-sm font-medium">
+                <span>Name</span>
+                <Input value={form.name} onChange={(event) => updateForm("name", event.target.value)} required />
+              </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>Email Address</span>
+                <Input type="email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} required />
+              </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>Department</span>
+                <Input value={form.department} onChange={(event) => updateForm("department", event.target.value)} required />
+              </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>Joined</span>
+                <Input type="date" value={form.joinedOn} onChange={(event) => updateForm("joinedOn", event.target.value)} required />
+              </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>Assigned Role</span>
+                <select
+                  value={form.role}
+                  onChange={(event) => updateRole(event.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  {roleOptions.map((role) => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-3 rounded-md border border-border/70 px-3 py-3 text-sm font-medium">
+                <Checkbox
+                  checked={form.isActive}
+                  onCheckedChange={(checked) => updateForm("isActive", checked === true)}
+                />
+                Active user
+              </label>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border/70 p-4">
+              <div>
+                <p className="text-sm font-semibold">Assigned Competency</p>
+                <p className="text-xs text-muted-foreground">
+                  Competency Admins may have one or multiple competency admin roles.
+                </p>
+              </div>
+
+              {form.role === ROLES.SUPER_ADMIN || form.role === ROLES.VIEWER ? (
+                <div className="rounded-md bg-muted/45 px-3 py-2 text-sm text-muted-foreground">
+                  {form.role === ROLES.SUPER_ADMIN
+                    ? "Super Admin receives unrestricted access to all competencies."
+                    : "Viewer receives read-only access to all published competency information."}
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {competencyOptions.map((role) => (
+                    <label key={role.id} className="flex items-center gap-3 rounded-md border border-border/70 px-3 py-2 text-sm">
+                      <Checkbox
+                        checked={form.competencies.includes(role.name)}
+                        onCheckedChange={(checked) => toggleCompetency(role.name, checked === true)}
+                      />
+                      {role.name} Admin
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {formError && (
+              <p className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {formError}
+              </p>
+            )}
+
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={closeUserForm}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingUser ? "Update User" : "Create User"}
+              </Button>
+            </div>
+          </form>
+        </section>
+      )}
+
       <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] text-left">
@@ -501,100 +587,6 @@ export default function UserManagement() {
         )}
       </section>
 
-      <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingUser ? "Update User" : "Create User"}</DialogTitle>
-            <DialogDescription>
-              Role and competency assignments drive login, navigation, and content authorization.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2 text-sm font-medium">
-                <span>Name</span>
-                <Input value={form.name} onChange={(event) => updateForm("name", event.target.value)} required />
-              </label>
-              <label className="space-y-2 text-sm font-medium">
-                <span>Email Address</span>
-                <Input type="email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} required />
-              </label>
-              <label className="space-y-2 text-sm font-medium">
-                <span>Department</span>
-                <Input value={form.department} onChange={(event) => updateForm("department", event.target.value)} required />
-              </label>
-              <label className="space-y-2 text-sm font-medium">
-                <span>Joined</span>
-                <Input type="date" value={form.joinedOn} onChange={(event) => updateForm("joinedOn", event.target.value)} required />
-              </label>
-              <label className="space-y-2 text-sm font-medium">
-                <span>Assigned Role</span>
-                <select
-                  value={form.role}
-                  onChange={(event) => updateRole(event.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                >
-                  {roleOptions.map((role) => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex items-center gap-3 rounded-md border border-border/70 px-3 py-3 text-sm font-medium">
-                <Checkbox
-                  checked={form.isActive}
-                  onCheckedChange={(checked) => updateForm("isActive", checked === true)}
-                />
-                Active user
-              </label>
-            </div>
-
-            <div className="space-y-3 rounded-lg border border-border/70 p-4">
-              <div>
-                <p className="text-sm font-semibold">Assigned Competency</p>
-                <p className="text-xs text-muted-foreground">
-                  Competency Admins may have one or multiple competency admin roles.
-                </p>
-              </div>
-
-              {form.role === ROLES.SUPER_ADMIN || form.role === ROLES.VIEWER ? (
-                <div className="rounded-md bg-muted/45 px-3 py-2 text-sm text-muted-foreground">
-                  {form.role === ROLES.SUPER_ADMIN
-                    ? "Super Admin receives unrestricted access to all competencies."
-                    : "Viewer receives read-only access to all published competency information."}
-                </div>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {competencyOptions.map((role) => (
-                    <label key={role.id} className="flex items-center gap-3 rounded-md border border-border/70 px-3 py-2 text-sm">
-                      <Checkbox
-                        checked={form.competencies.includes(role.name)}
-                        onCheckedChange={(checked) => toggleCompetency(role.name, checked === true)}
-                      />
-                      {role.name} Admin
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {formError && (
-              <p className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {formError}
-              </p>
-            )}
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingUser ? "Update User" : "Create User"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
