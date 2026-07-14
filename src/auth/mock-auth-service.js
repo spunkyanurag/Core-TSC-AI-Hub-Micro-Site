@@ -234,6 +234,10 @@ function validateManagedUser(user) {
     throw new Error("Assigned role is required.");
   }
 
+  if (!user.joinedOn || Number.isNaN(new Date(user.joinedOn).getTime())) {
+    throw new Error("Joined date is required.");
+  }
+
   if (
     user.roles.includes(ROLES.COMPETENCY_ADMIN) &&
     !user.competencies?.length

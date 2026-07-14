@@ -43,14 +43,21 @@ const competencyOptions = CONTENT_ACCESS_ROLES.filter(
   (role) => role.name !== CONTENT_ACCESS_ROLE_GENERAL
 );
 
-const emptyForm = {
-  name: "",
-  email: "",
-  role: ROLES.VIEWER,
-  competencies: ["All"],
-  department: "ValueMomentum",
-  isActive: true,
-};
+function getToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getEmptyForm() {
+  return {
+    name: "",
+    email: "",
+    role: ROLES.VIEWER,
+    competencies: ["All"],
+    department: "ValueMomentum",
+    joinedOn: getToday(),
+    isActive: true,
+  };
+}
 
 function getInitials(name = "") {
   return name
@@ -126,7 +133,7 @@ export default function UserManagement() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(getEmptyForm);
   const [formError, setFormError] = useState("");
 
   const filteredUsers = useMemo(() => {
@@ -166,7 +173,7 @@ export default function UserManagement() {
 
   function openCreateDialog() {
     setEditingUser(null);
-    setForm(emptyForm);
+    setForm(getEmptyForm());
     setFormError("");
     setIsDialogOpen(true);
   }
@@ -181,6 +188,7 @@ export default function UserManagement() {
       role,
       competencies: getCompetenciesForRole(role, user.competencies),
       department: user.department,
+      joinedOn: user.joinedOn,
       isActive: user.isActive,
     });
     setFormError("");
@@ -218,6 +226,7 @@ export default function UserManagement() {
       competencies,
       department: form.department,
       title: getTitleForRole(form.role, competencies),
+      joinedOn: form.joinedOn,
       isActive: form.isActive,
     };
 
@@ -451,6 +460,10 @@ export default function UserManagement() {
               <label className="space-y-2 text-sm font-medium">
                 <span>Department</span>
                 <Input value={form.department} onChange={(event) => updateForm("department", event.target.value)} />
+              </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>Joined</span>
+                <Input type="date" value={form.joinedOn} onChange={(event) => updateForm("joinedOn", event.target.value)} />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Assigned Role</span>
