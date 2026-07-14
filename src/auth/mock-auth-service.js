@@ -8,7 +8,7 @@ import {
 const SESSION_STORAGE_KEY = "tsc-hub.mock-auth.session";
 const USER_STORAGE_KEY = "tsc-hub.mock-auth.users";
 const COMPETENCY_ADMIN_LOGIN_ROLE = "Competency Admin";
-const DEFAULT_PASSWORD = "password";
+const DEFAULT_VIEWER_EMAIL = "viewer@valuemomentum.com";
 const ALL_COMPETENCIES = "All";
 
 const LEGACY_COMPETENCY_ROLE_MAP = {
@@ -65,7 +65,6 @@ function normalizeUser(user) {
     isActive: user.isActive !== false,
     roles,
     competencies: normalizeCompetencies({ ...user, roles }),
-    password: user.password || DEFAULT_PASSWORD,
   };
 }
 
@@ -74,8 +73,7 @@ function sanitizeUser(user) {
     return null;
   }
 
-  const { password, ...safeUser } = normalizeUser(user);
-  return safeUser;
+  return normalizeUser(user);
 }
 
 function withPermissions(user) {
@@ -134,6 +132,32 @@ function findUserByEmail(email) {
 
 function findUserById(id) {
   return readUsers().find((user) => user.id === id);
+}
+
+function ensureDefaultViewerUser() {
+  const users = readUsers();
+  const existingViewer = users.find(
+    (user) => user.isActive && user.roles.includes(ROLES.VIEWER)
+  );
+
+  if (existingViewer) {
+    return existingViewer;
+  }
+
+  const viewer = normalizeUser({
+    id: "usr-tsc-viewer-anyone",
+    name: "Anyone",
+    email: DEFAULT_VIEWER_EMAIL,
+    title: ROLES.VIEWER,
+    department: "ValueMomentum",
+    joinedOn: new Date().toISOString().slice(0, 10),
+    isActive: true,
+    roles: [ROLES.VIEWER],
+    competencies: [ALL_COMPETENCIES],
+  });
+
+  writeUsers([...users, viewer]);
+  return viewer;
 }
 
 function readSession() {
@@ -245,12 +269,10 @@ function toManagedUser(input, existingUser) {
     title: input.title || (roleChanged ? role : existingUser?.title) || role,
     roles,
     competencies,
-    password: input.password || existingUser?.password || DEFAULT_PASSWORD,
   });
 }
 
 export const MockAuthService = {
-  DEFAULT_PASSWORD,
   COMPETENCY_ADMIN_LOGIN_ROLE,
 
   userMatchesLoginRole,
@@ -272,18 +294,17 @@ export const MockAuthService = {
     return withPermissions(user);
   },
 
-  async login({ email, password, role }) {
+  async login({ email, role }) {
     const normalizedEmail = email?.trim();
 
-    if (!normalizedEmail) {
+    if (!normalizedEmail && role !== ROLES.VIEWER) {
       throw new Error("Enter an email address to continue.");
     }
 
-    if (!password) {
-      throw new Error("Enter your password to continue.");
-    }
-
-    const user = findUserByEmail(normalizedEmail);
+    const user =
+      role === ROLES.VIEWER && !normalizedEmail
+        ? ensureDefaultViewerUser()
+        : findUserByEmail(normalizedEmail);
 
     if (!user) {
       throw new Error("No user exists for this email address.");
@@ -297,10 +318,6 @@ export const MockAuthService = {
       throw new Error(`This account is not configured as ${role}. Choose a matching user type or account.`);
     }
 
-    if (user.password !== password) {
-      throw new Error("Invalid email or password.");
-    }
-
     writeSession(user);
     return withPermissions(user);
   },
@@ -308,7 +325,6 @@ export const MockAuthService = {
   async loginAsDefaultUser() {
     return this.login({
       email: authData.defaultUserEmail,
-      password: DEFAULT_PASSWORD,
       role: ROLES.SUPER_ADMIN,
     });
   },

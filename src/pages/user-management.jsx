@@ -46,7 +46,6 @@ const competencyOptions = CONTENT_ACCESS_ROLES.filter(
 const emptyForm = {
   name: "",
   email: "",
-  password: MockAuthService.DEFAULT_PASSWORD,
   role: ROLES.VIEWER,
   competencies: ["All"],
   department: "ValueMomentum",
@@ -179,7 +178,6 @@ export default function UserManagement() {
     setForm({
       name: user.name,
       email: user.email,
-      password: "",
       role,
       competencies: getCompetenciesForRole(role, user.competencies),
       department: user.department,
@@ -222,10 +220,6 @@ export default function UserManagement() {
       title: getTitleForRole(form.role, competencies),
       isActive: form.isActive,
     };
-
-    if (!editingUser || form.password) {
-      payload.password = form.password;
-    }
 
     return payload;
   }
@@ -453,15 +447,6 @@ export default function UserManagement() {
               <label className="space-y-2 text-sm font-medium">
                 <span>Email Address</span>
                 <Input type="email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
-              </label>
-              <label className="space-y-2 text-sm font-medium">
-                <span>Password</span>
-                <Input
-                  type="password"
-                  value={form.password}
-                  onChange={(event) => updateForm("password", event.target.value)}
-                  placeholder={editingUser ? "Leave blank to keep current password" : undefined}
-                />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Department</span>

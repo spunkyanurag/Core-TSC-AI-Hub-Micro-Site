@@ -26,7 +26,7 @@ const ROLE_OPTIONS = [
   {
     value: ROLES.VIEWER,
     label: "Viewer",
-    description: "Read-only access. Any email can sign in as Viewer.",
+    description: "Read-only access. No email is required.",
     icon: Eye,
   },
 ];
@@ -57,7 +57,6 @@ export default function Login() {
       mockUsers[0]?.email ||
       ""
   );
-  const [password, setPassword] = useState(MockAuthService.DEFAULT_PASSWORD);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,6 +69,12 @@ export default function Login() {
   function handleRoleChange(role) {
     setError("");
     setSelectedRole(role);
+
+    if (role === ROLES.VIEWER) {
+      setEmail("");
+      return;
+    }
+
     setEmail(
       mockUsers.find(
         (user) =>
@@ -77,49 +82,16 @@ export default function Login() {
           MockAuthService.userMatchesLoginRole(user, role)
       )?.email || ""
     );
-    setPassword(MockAuthService.DEFAULT_PASSWORD);
   }
 
-  async function handleLogin(
-    event,
-    emailOverride = email,
-    passwordOverride = password
-  ) {
+  async function handleLogin(event, emailOverride = email) {
     event?.preventDefault();
     setError("");
     setIsSubmitting(true);
 
     try {
       await login({
-        email: emailOverride,
-        password: passwordOverride,
-        role: selectedRole,
-      });
-      navigate(getRedirectPath(), { replace: true });
-    } catch (loginError) {
-      setError(loginError.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleDefaultLogin() {
-    const demoUser = roleUsers[0];
-
-    if (!demoUser) {
-      setError(`No demo account is configured for ${selectedRole}.`);
-      return;
-    }
-
-    setEmail(demoUser.email);
-    setPassword(MockAuthService.DEFAULT_PASSWORD);
-    setError("");
-    setIsSubmitting(true);
-
-    try {
-      await login({
-        email: demoUser.email,
-        password: MockAuthService.DEFAULT_PASSWORD,
+        email: selectedRole === ROLES.VIEWER ? "" : emailOverride,
         role: selectedRole,
       });
       navigate(getRedirectPath(), { replace: true });
@@ -162,7 +134,7 @@ export default function Login() {
               <img src={LogoLight} alt="ValueMomentum" className="h-9 w-fit object-contain dark:hidden" />
               <CardTitle className="text-2xl">Sign in</CardTitle>
               <CardDescription>
-                Choose your user type and ValueMomentum identity to continue.
+                Super Admin and Competency Admin use email only. Viewer access does not require an email.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -216,25 +188,31 @@ export default function Login() {
                   </div>
                 </fieldset>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">{selectedRole} account</Label>
-                  <Input
-                    id="email"
-                    list="mock-users"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    autoComplete="email"
-                    placeholder="Enter your email address"
-                  />
-                  <datalist id="mock-users">
-                    {roleUsers.map((user) => (
-                      <option key={user.id} value={user.email}>
-                        {user.name}
-                      </option>
-                    ))}
-                  </datalist>
-                </div>
+                {selectedRole === ROLES.VIEWER ? (
+                  <div className="rounded-md border border-[#056BFC]/20 bg-[#056BFC]/5 px-3 py-3 text-sm text-muted-foreground">
+                    Continue as Viewer for read-only access to published content.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{selectedRole} email</Label>
+                    <Input
+                      id="email"
+                      list="mock-users"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      autoComplete="email"
+                      placeholder="Enter your email address"
+                    />
+                    <datalist id="mock-users">
+                      {roleUsers.map((user) => (
+                        <option key={user.id} value={user.email}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </datalist>
+                  </div>
+                )}
 
                 {error && (
                   <p className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -245,34 +223,8 @@ export default function Login() {
                 <div className="grid gap-3">
                   <Button type="submit" disabled={isSubmitting} className="w-full">
                     <LogIn className="h-4 w-4" />
-                    Sign in
+                    {selectedRole === ROLES.VIEWER ? "Continue as Viewer" : "Sign in"}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting}
-                    onClick={handleDefaultLogin}
-                    className="w-full"
-                  >
-                    {selectedRole === ROLES.VIEWER
-                      ? "Continue as Viewer"
-                      : "Use selected role account"}
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                    placeholder="Enter your password"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Demo users use password: password
-                  </p>
                 </div>
               </form>
             </CardContent>
