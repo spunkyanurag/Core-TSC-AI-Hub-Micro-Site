@@ -1,4 +1,5 @@
 import { CONTENT_ACCESS_ROLE, getContentAccessRoleForPlatform } from "@/lib/content-access";
+export { guidewireInnovationSolutions } from "@/mock-data/guidewire-innovation";
 
 export const kpis = {
   totalCompetencies: 0,

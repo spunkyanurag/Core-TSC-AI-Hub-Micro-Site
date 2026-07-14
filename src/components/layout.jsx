@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
@@ -35,6 +35,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import { PERMISSIONS, useAuth } from "@/auth";
+import { filterContentForUser } from "@/lib/content-access";
+import { userCanManageGuidewireInnovation } from "@/lib/guidewire-innovation-access";
+import { readGuidewireInnovationSolutions } from "@/lib/guidewire-innovation-storage";
 const LogoDark = "/assets/logo-dark.png";
 const LogoLight = "/assets/logo-light.png";
 const IconMark = "/assets/favicon-mark.png";
@@ -60,6 +63,7 @@ const NAV_ITEMS = [
 const ROUTE_LABELS = {
   "/earnix-resources": "Earnix Resources",
   "/earnix-demos": "Earnix Demo Library",
+  "/innovation/guidewire": "Guidewire Innovation",
   "/user-management": "User Management",
   "/unauthorized": "Unauthorized",
 };
@@ -78,28 +82,86 @@ export function Layout({ children }) {
   const [location, navigate] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [portalSearch, setPortalSearch] = useState("");
   const { theme, setTheme } = useTheme();
   const { hasPermissions, logout, user } = useAuth();
   
   const visibleNavItems = NAV_ITEMS.filter((item) =>
     hasPermissions(item.requiredPermissions || [])
   );
-  const currentNav = NAV_ITEMS.find((item) => item.path === location) || {
-    label: ROUTE_LABELS[location] || NAV_ITEMS[0].label,
+  function routeMatches(path) {
+    if (path === "/") {
+      return location === "/";
+    }
+
+    return location === path || location.startsWith(`${path}/`);
+  }
+
+  const matchedNavItem = NAV_ITEMS.find((item) => routeMatches(item.path));
+  const currentNav = {
+    label:
+      ROUTE_LABELS[location] ||
+      (location.startsWith("/innovation/guidewire")
+        ? "Guidewire Innovation"
+        : matchedNavItem?.label || NAV_ITEMS[0].label),
   };
+
+  const portalSearchResults = useMemo(() => {
+    const normalizedQuery = portalSearch.trim().toLowerCase();
+
+    if (normalizedQuery.length < 2) {
+      return [];
+    }
+
+    const canManageGuidewire = userCanManageGuidewireInnovation(user);
+    const visibleSolutions = filterContentForUser(
+      readGuidewireInnovationSolutions().filter(
+        (solution) => solution.isPublished || canManageGuidewire
+      ),
+      user
+    );
+
+    return visibleSolutions
+      .filter((solution) =>
+        [
+          solution.title,
+          solution.subtitle,
+          solution.summary,
+          solution.tags.join(" "),
+          solution.technologies.join(" "),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedQuery)
+      )
+      .slice(0, 5)
+      .map((solution) => ({
+        href: `/innovation/guidewire/${solution.slug}`,
+        label: solution.title,
+        description: solution.subtitle || solution.summary,
+      }));
+  }, [portalSearch, user]);
 
   async function handleLogout() {
     await logout();
     navigate("/login", { replace: true });
   }
 
+  function handlePortalSearchKeyDown(event) {
+    if (event.key === "Enter" && portalSearchResults[0]) {
+      navigate(portalSearchResults[0].href);
+      setPortalSearch("");
+    }
+  }
+
   useEffect(() => {
     setIsMobileNavOpen(false);
+    setPortalSearch("");
   }, [location]);
 
   function renderNavItems({ isMobile = false } = {}) {
     return visibleNavItems.map((item) => {
-      const isActive = location === item.path;
+      const isActive = routeMatches(item.path);
       const isDisabled = item.path === null;
       const Icon = item.icon;
       const showLabel = isMobile || !isCollapsed;
@@ -227,8 +289,34 @@ export function Layout({ children }) {
               <Input 
                 type="search" 
                 placeholder="Search resources..." 
+                value={portalSearch}
+                onChange={(event) => setPortalSearch(event.target.value)}
+                onKeyDown={handlePortalSearchKeyDown}
                 className="w-full pl-9 bg-muted/50 border-transparent focus-visible:bg-background"
               />
+              {portalSearch.trim().length >= 2 && (
+                <div className="absolute right-0 top-11 z-40 w-80 overflow-hidden rounded-lg border bg-popover shadow-lg">
+                  {portalSearchResults.length ? (
+                    portalSearchResults.map((result) => (
+                      <Link
+                        key={result.href}
+                        href={result.href}
+                        className="block border-b px-4 py-3 last:border-0 hover:bg-muted"
+                        onClick={() => setPortalSearch("")}
+                      >
+                        <p className="text-sm font-semibold text-foreground">{result.label}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                          {result.description}
+                        </p>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-muted-foreground">
+                      No matching Guidewire solutions.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <Button

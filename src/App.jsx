@@ -13,6 +13,8 @@ import Dashboard from "@/pages/dashboard";
 import Competencies from "@/pages/competencies";
 import Assets from "@/pages/assets";
 import Innovation from "@/pages/innovation";
+import GuidewireInnovation from "@/pages/guidewire-innovation";
+import GuidewireSolution from "@/pages/guidewire-solution";
 import PocShowcase from "@/pages/poc-showcase";
 import DemoCenter from "@/pages/demo-center";
 import SuccessStories from "@/pages/success-stories";
@@ -44,6 +46,10 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/competencies" component={Competencies} />
       <Route path="/assets" component={Assets} />
+      <Route path="/innovation/guidewire/:slug">
+        {(params) => <GuidewireSolution slug={params.slug} />}
+      </Route>
+      <Route path="/innovation/guidewire" component={GuidewireInnovation} />
       <Route path="/innovation" component={Innovation} />
       <Route path="/poc-showcase" component={PocShowcase} />
       <Route path="/demo-center" component={DemoCenter} />
