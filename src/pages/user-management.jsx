@@ -70,6 +70,10 @@ function getInitials(name = "") {
 }
 
 function formatDate(date) {
+  if (!date || Number.isNaN(new Date(date).getTime())) {
+    return "Not set";
+  }
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "2-digit",
@@ -171,6 +175,16 @@ export default function UserManagement() {
     setUsers(MockAuthService.getMockUsers());
   }
 
+  function handleDialogOpenChange(open) {
+    setIsDialogOpen(open);
+
+    if (!open) {
+      setEditingUser(null);
+      setForm(getEmptyForm());
+      setFormError("");
+    }
+  }
+
   function openCreateDialog() {
     setEditingUser(null);
     setForm(getEmptyForm());
@@ -188,7 +202,7 @@ export default function UserManagement() {
       role,
       competencies: getCompetenciesForRole(role, user.competencies),
       department: user.department,
-      joinedOn: user.joinedOn,
+      joinedOn: user.joinedOn || getToday(),
       isActive: user.isActive,
     });
     setFormError("");
@@ -220,11 +234,11 @@ export default function UserManagement() {
   function buildPayload() {
     const competencies = getCompetenciesForRole(form.role, form.competencies);
     const payload = {
-      name: form.name,
-      email: form.email,
+      name: form.name.trim(),
+      email: form.email.trim(),
       role: form.role,
       competencies,
-      department: form.department,
+      department: form.department.trim(),
       title: getTitleForRole(form.role, competencies),
       joinedOn: form.joinedOn,
       isActive: form.isActive,
@@ -233,11 +247,48 @@ export default function UserManagement() {
     return payload;
   }
 
+  function validateForm() {
+    const competencies = getCompetenciesForRole(form.role, form.competencies);
+
+    if (!form.name.trim()) {
+      return "Name is required.";
+    }
+
+    if (!form.email.trim()) {
+      return "Email address is required.";
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      return "Enter a valid email address.";
+    }
+
+    if (!form.department.trim()) {
+      return "Department is required.";
+    }
+
+    if (!form.joinedOn || Number.isNaN(new Date(form.joinedOn).getTime())) {
+      return "Joined date is required.";
+    }
+
+    if (form.role === ROLES.COMPETENCY_ADMIN && competencies.length === 0) {
+      return "Assign at least one competency to a Competency Admin.";
+    }
+
+    return "";
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
     setFormError("");
 
     try {
+      const validationError = validateForm();
+
+      if (validationError) {
+        setFormError(validationError);
+        return;
+      }
+
       if (editingUser) {
         MockAuthService.updateUser(editingUser.id, buildPayload());
       } else {
@@ -245,6 +296,10 @@ export default function UserManagement() {
       }
 
       refreshUsers();
+      setSearch("");
+      setRoleFilter("all");
+      setCompetencyFilter("all");
+      setStatusFilter("all");
       setIsDialogOpen(false);
     } catch (error) {
       setFormError(error.message);
@@ -353,7 +408,7 @@ export default function UserManagement() {
 
       <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1080px] text-left">
+          <table className="w-full min-w-[1180px] text-left">
             <thead className="border-b bg-muted/35 text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-6 py-4 font-semibold">User</th>
@@ -408,19 +463,27 @@ export default function UserManagement() {
                       </Badge>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" aria-label={`Edit ${user.name}`} onClick={() => openEditDialog(user)}>
-                          <Edit className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex min-w-[270px] justify-end gap-2">
+                        <Button variant="outline" size="sm" aria-label={`Edit ${user.name}`} onClick={() => openEditDialog(user)}>
+                          <Edit className="h-4 w-4" />
+                          Edit
                         </Button>
-                        <Button variant="ghost" size="icon" aria-label={user.isActive ? `Deactivate ${user.name}` : `Activate ${user.name}`} onClick={() => handleToggleActive(user)}>
+                        <Button variant="outline" size="sm" aria-label={user.isActive ? `Deactivate ${user.name}` : `Activate ${user.name}`} onClick={() => handleToggleActive(user)}>
                           {user.isActive ? (
-                            <UserX className="h-4 w-4 text-muted-foreground" />
+                            <>
+                              <UserX className="h-4 w-4" />
+                              Deactivate
+                            </>
                           ) : (
-                            <UserCheck className="h-4 w-4 text-[#18772A]" />
+                            <>
+                              <UserCheck className="h-4 w-4 text-[#18772A]" />
+                              Activate
+                            </>
                           )}
                         </Button>
-                        <Button variant="ghost" size="icon" aria-label={`Delete ${user.name}`} onClick={() => handleDelete(user)}>
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        <Button variant="outline" size="sm" className="text-destructive" aria-label={`Delete ${user.name}`} onClick={() => handleDelete(user)}>
+                          <Trash2 className="h-4 w-4" />
+                          Delete
                         </Button>
                       </div>
                     </td>
@@ -438,8 +501,8 @@ export default function UserManagement() {
         )}
       </section>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingUser ? "Update User" : "Create User"}</DialogTitle>
             <DialogDescription>
@@ -447,23 +510,23 @@ export default function UserManagement() {
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm font-medium">
                 <span>Name</span>
-                <Input value={form.name} onChange={(event) => updateForm("name", event.target.value)} />
+                <Input value={form.name} onChange={(event) => updateForm("name", event.target.value)} required />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Email Address</span>
-                <Input type="email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} />
+                <Input type="email" value={form.email} onChange={(event) => updateForm("email", event.target.value)} required />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Department</span>
-                <Input value={form.department} onChange={(event) => updateForm("department", event.target.value)} />
+                <Input value={form.department} onChange={(event) => updateForm("department", event.target.value)} required />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Joined</span>
-                <Input type="date" value={form.joinedOn} onChange={(event) => updateForm("joinedOn", event.target.value)} />
+                <Input type="date" value={form.joinedOn} onChange={(event) => updateForm("joinedOn", event.target.value)} required />
               </label>
               <label className="space-y-2 text-sm font-medium">
                 <span>Assigned Role</span>

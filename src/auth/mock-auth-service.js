@@ -230,8 +230,16 @@ function validateManagedUser(user) {
     throw new Error("Email address is required.");
   }
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email.trim())) {
+    throw new Error("Enter a valid email address.");
+  }
+
   if (!user.roles?.length) {
     throw new Error("Assigned role is required.");
+  }
+
+  if (!user.department?.trim()) {
+    throw new Error("Department is required.");
   }
 
   if (!user.joinedOn || Number.isNaN(new Date(user.joinedOn).getTime())) {
