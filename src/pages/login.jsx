@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { Eye, LogIn, ShieldCheck, UserCog } from "lucide-react";
+import { CheckCircle2, Eye, LogIn, Mail, ShieldCheck, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,20 @@ const ROLE_OPTIONS = [
   },
 ];
 
+function getDefaultEmailForRole(users, role) {
+  if (role === ROLES.VIEWER) {
+    return "";
+  }
+
+  return (
+    users.find(
+      (user) =>
+        user.isActive &&
+        MockAuthService.userMatchesLoginRole(user, role)
+    )?.email || ""
+  );
+}
+
 function getRedirectPath() {
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get("redirect");
@@ -52,10 +66,8 @@ export default function Login() {
       ),
     [mockUsers, selectedRole]
   );
-  const [email, setEmail] = useState(
-    mockUsers.find((user) => user.roles.includes(ROLES.SUPER_ADMIN))?.email ||
-      mockUsers[0]?.email ||
-      ""
+  const [email, setEmail] = useState(() =>
+    getDefaultEmailForRole(mockUsers, ROLES.SUPER_ADMIN)
   );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,19 +81,7 @@ export default function Login() {
   function handleRoleChange(role) {
     setError("");
     setSelectedRole(role);
-
-    if (role === ROLES.VIEWER) {
-      setEmail("");
-      return;
-    }
-
-    setEmail(
-      mockUsers.find(
-        (user) =>
-          user.isActive &&
-          MockAuthService.userMatchesLoginRole(user, role)
-      )?.email || ""
-    );
+    setEmail(getDefaultEmailForRole(mockUsers, role));
   }
 
   async function handleLogin(event, emailOverride = email) {
@@ -192,6 +192,66 @@ export default function Login() {
                   <div className="rounded-md border border-[#056BFC]/20 bg-[#056BFC]/5 px-3 py-3 text-sm text-muted-foreground">
                     Continue as Viewer for read-only access to published content.
                   </div>
+                ) : selectedRole === COMPETENCY_ADMIN_LOGIN_ROLE ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <Label>Choose Competency Admin email</Label>
+                      <span className="text-xs text-muted-foreground">
+                        {roleUsers.length} available
+                      </span>
+                    </div>
+                    <div className="grid max-h-64 gap-2 overflow-y-auto rounded-md border bg-muted/20 p-2">
+                      {roleUsers.map((user) => {
+                        const isSelected = email.toLowerCase() === user.email.toLowerCase();
+
+                        return (
+                          <Label
+                            key={user.id}
+                            className={`flex cursor-pointer items-start gap-3 rounded-md border bg-background p-3 transition-colors ${
+                              isSelected
+                                ? "border-[#056BFC] ring-1 ring-[#056BFC]"
+                                : "border-border hover:border-[#056BFC]/45"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="competencyAdminEmail"
+                              value={user.email}
+                              checked={isSelected}
+                              onChange={() => setEmail(user.email)}
+                              className="sr-only"
+                            />
+                            <span
+                              className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md ${
+                                isSelected
+                                  ? "bg-[#056BFC] text-white"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {isSelected ? (
+                                <CheckCircle2 className="h-4 w-4" />
+                              ) : (
+                                <Mail className="h-4 w-4" />
+                              )}
+                            </span>
+                            <span className="min-w-0 flex-1 space-y-1">
+                              <span className="block truncate text-sm font-semibold">
+                                {user.email}
+                              </span>
+                              <span className="block text-xs leading-5 text-muted-foreground">
+                                {user.name} - {user.competencies?.join(", ") || "No competency assigned"}
+                              </span>
+                            </span>
+                          </Label>
+                        );
+                      })}
+                      {!roleUsers.length && (
+                        <div className="rounded-md border border-dashed bg-background px-3 py-4 text-sm text-muted-foreground">
+                          No active Competency Admin users are available.
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     <Label htmlFor="email">{selectedRole} email</Label>
@@ -221,7 +281,14 @@ export default function Login() {
                 )}
 
                 <div className="grid gap-3">
-                  <Button type="submit" disabled={isSubmitting} className="w-full">
+                  <Button
+                    type="submit"
+                    disabled={
+                      isSubmitting ||
+                      (selectedRole !== ROLES.VIEWER && !email)
+                    }
+                    className="w-full"
+                  >
                     <LogIn className="h-4 w-4" />
                     {selectedRole === ROLES.VIEWER ? "Continue as Viewer" : "Sign in"}
                   </Button>
