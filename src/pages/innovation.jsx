@@ -3,27 +3,26 @@ import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { innovations } from "@/mock-data";
 import { PERMISSIONS, useAuth } from "@/auth";
-import { CONTENT_ACCESS_ROLE, filterContentForUser, userCanViewContent } from "@/lib/content-access";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform, userCanViewContent } from "@/lib/content-access";
 import { readGuidewireInnovationSolutions } from "@/lib/guidewire-innovation-storage";
 import {
   ArrowRight,
-  ArrowUpRight,
-  Beaker,
   Car,
+  Clock,
   Droplets,
   Gauge,
   Layers,
   Lightbulb,
-  Rocket,
+  PlaySquare,
+  Users,
+  Video,
 } from "lucide-react";
 
-const focusAreas = [
-  { title: "Generative AI", desc: "LLMs for underwriting and claims", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
-  { title: "Predictive Analytics", desc: "ML models for risk assessment", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
-  { title: "IoT & Telematics", desc: "Real-time data streaming", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
-  { title: "Cloud Native Architecture", desc: "Serverless and microservices", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+const featuredDemos = [
+  { title: "Guidewire Cloud Transition", duration: "45 mins", type: "Technical Deep Dive", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { title: "Earnix Pricing Engine Integration", duration: "30 mins", type: "Architecture Review", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
+  { title: "Automated Testing Framework", duration: "60 mins", type: "Hands-on Workshop", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
 const solutionIcons = {
@@ -73,8 +72,7 @@ function GuidewirePreviewCard({ solution }) {
 export default function Innovation() {
   const { hasPermissions, user } = useAuth();
   const guidewireSolutions = readGuidewireInnovationSolutions();
-  const visibleInnovations = filterContentForUser(innovations, user);
-  const visibleFocusAreas = filterContentForUser(focusAreas, user);
+  const visibleDemos = filterContentForUser(featuredDemos, user);
   const canViewGuidewire = userCanViewContent(user, CONTENT_ACCESS_ROLE.GUIDEWIRE);
   const visibleGuidewireSolutions = filterContentForUser(
     guidewireSolutions.filter((solution) => solution.isPublished),
@@ -128,72 +126,64 @@ export default function Innovation() {
       </section>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <div className="md:col-span-8 space-y-6">
-          {visibleInnovations.map((innovation, i) => (
-            <motion.div
-              key={innovation.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.1 }}
-            >
-              <Card className="hover-elevate border-border/50 transition-all overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-1 h-full bg-[#FABD00]" />
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge variant="outline" className="mb-2 text-[#FABD00] border-[#FABD00]/20 bg-[#FABD00]/5">Active R&D</Badge>
-                      <CardTitle className="text-xl">{innovation.title}</CardTitle>
-                    </div>
-                    <Button variant="ghost" size="icon">
-                      <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                  <CardDescription className="text-base">{innovation.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      <Beaker className="w-4 h-4 text-[#056BFC]" /> Experiment Phase
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Rocket className="w-4 h-4 text-[#3FD534]" /> Target: Q3 2024
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-          {visibleInnovations.length === 0 && (
-            <Card className="border-border/50">
-              <CardContent className="p-8 text-center text-muted-foreground">
-                No innovation items are available for your account.
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <div className="md:col-span-4 space-y-6">
-          <Card className="border-border/50 bg-[#F8F8FB] dark:bg-muted/20">
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 space-y-6">
+          <Card className="border-border/50">
             <CardHeader>
-              <CardTitle>Focus Areas</CardTitle>
+              <CardTitle>Featured Demos</CardTitle>
+              <CardDescription>Ready-to-present technical deep dives</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {visibleFocusAreas.map((area) => (
-                <div key={area.title} className="flex items-start gap-3 pb-4 border-b border-border/50 last:border-0 last:pb-0">
-                  <div className="p-2 bg-[#056BFC]/10 rounded-md text-[#056BFC] mt-1">
-                    <ArrowRight className="w-3 h-3" />
+              {visibleDemos.map((demo, i) => (
+                <motion.div
+                  key={demo.title}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex flex-col justify-between rounded-lg border border-border/50 p-4 transition-colors hover:bg-[#F8F8FB] dark:hover:bg-muted/30 sm:flex-row sm:items-center"
+                >
+                  <div className="mb-4 sm:mb-0">
+                    <h3 className="text-lg font-semibold">{demo.title}</h3>
+                    <div className="mt-1 flex gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center"><Clock className="mr-1 h-3 w-3" /> {demo.duration}</span>
+                      <span className="flex items-center"><Video className="mr-1 h-3 w-3" /> {demo.type}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold">{area.title}</h4>
-                    <p className="text-xs text-muted-foreground">{area.desc}</p>
-                  </div>
-                </div>
+                  {canManageContent && (
+                    <Button variant="outline" className="shrink-0 border-[#056BFC]/20 text-[#056BFC] hover:bg-[#056BFC]/10">
+                      <PlaySquare className="mr-2 h-4 w-4" /> Request
+                    </Button>
+                  )}
+                </motion.div>
               ))}
+              {visibleDemos.length === 0 && (
+                <div className="p-6 text-center text-sm text-muted-foreground">
+                  No demos are available for your account.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-      </div>
+
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="border-[#056BFC]/20 bg-[#056BFC]/5">
+            <CardContent className="space-y-4 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#056BFC]/10 text-[#056BFC]">
+                <Users className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-semibold">Need a custom demo?</h3>
+              <p className="text-sm text-muted-foreground">
+                Our architects can prepare a tailored presentation for your specific use case.
+              </p>
+              {canManageContent && (
+                <Button variant="outline" className="w-full border-[#056BFC]/50 text-[#056BFC] hover:bg-[#056BFC]/10">
+                  Contact Team
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }

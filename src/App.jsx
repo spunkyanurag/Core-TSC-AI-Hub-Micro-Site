@@ -16,7 +16,6 @@ import Innovation from "@/pages/innovation";
 import GuidewireInnovation from "@/pages/guidewire-innovation";
 import GuidewireSolution from "@/pages/guidewire-solution";
 import PocShowcase from "@/pages/poc-showcase";
-import DemoCenter from "@/pages/demo-center";
 import SuccessStories from "@/pages/success-stories";
 import Settings from "@/pages/settings";
 import EarnixResources from "@/pages/earnix-resources";
@@ -66,7 +65,6 @@ function Router() {
       <Route path="/innovation/guidewire" component={GuidewireInnovation} />
       <Route path="/innovation" component={Innovation} />
       <Route path="/poc-showcase" component={PocShowcase} />
-      <Route path="/demo-center" component={DemoCenter} />
       <Route path="/success-stories" component={SuccessStories} />
       <Route path="/settings">
         <ProtectedPage requiredPermissions={[PERMISSIONS.MANAGE_SETTINGS]}>
