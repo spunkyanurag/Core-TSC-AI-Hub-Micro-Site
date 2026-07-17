@@ -302,7 +302,7 @@ export const MockAuthService = {
     const session = readSession();
 
     if (!session?.email) {
-      return null;
+      return this.loginAsDefaultUser();
     }
 
     const user = findUserByEmail(session.email);

@@ -17,7 +17,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   ShieldCheck,
   UserCog,
 } from "lucide-react";
@@ -85,7 +84,7 @@ export function Layout({ children }) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [portalSearch, setPortalSearch] = useState("");
   const { theme, setTheme } = useTheme();
-  const { hasPermissions, logout, user } = useAuth();
+  const { hasPermissions, user } = useAuth();
   
   const visibleNavItems = NAV_ITEMS.filter((item) =>
     hasPermissions(item.requiredPermissions || [])
@@ -151,11 +150,6 @@ export function Layout({ children }) {
         description: solution.subtitle || solution.summary,
       }));
   }, [portalSearch, user]);
-
-  async function handleLogout() {
-    await logout();
-    navigate("/login", { replace: true });
-  }
 
   function handlePortalSearchKeyDown(event) {
     if (event.key === "Enter" && portalSearchResults[0]) {
@@ -374,11 +368,6 @@ export function Layout({ children }) {
                   </div>
                   <p>{user?.roles?.join(", ")}</p>
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

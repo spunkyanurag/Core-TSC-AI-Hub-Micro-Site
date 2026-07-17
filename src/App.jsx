@@ -7,7 +7,6 @@ import { AuthProvider, PERMISSIONS, ProtectedRoute } from "@/auth";
 import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout";
-import Login from "@/pages/login";
 import Unauthorized from "@/pages/unauthorized";
 import Dashboard from "@/pages/dashboard";
 import Competencies from "@/pages/competencies";
@@ -44,6 +43,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/home" component={Dashboard} />
+      <Route path="/login" component={Dashboard} />
       <Route path="/executive-dashboard" component={Dashboard} />
       <Route path="/competency-center/:categorySlug/:platformSlug">
         {(params) => (
@@ -101,7 +101,6 @@ function AuthenticatedApp() {
 function AppRoutes() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
       <Route>
         <AuthenticatedApp />
       </Route>

@@ -12,9 +12,9 @@ export function ProtectedRoute({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate(`/login?redirect=${encodeURIComponent(location)}`, { replace: true });
+      navigate("/", { replace: true });
     }
-  }, [isAuthenticated, isLoading, location, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     if (
