@@ -84,7 +84,7 @@ const aiRoadmap = [
     status: "planned", color: "#3FD534",
     contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL,
     items: [
-      "Embed AI natively across all 5 platform competencies",
+      "Embed AI natively across all 8 platform competencies",
       "Build reusable AI components for client engagements",
       "Launch marketplace AI accelerator catalog",
       "Establish AI centre of excellence within Core TSC",
@@ -98,7 +98,7 @@ const aiOfferings = [
   { icon: Cpu,          title: "Dynamic Pricing with Earnix AI",platform: "Earnix",                 status: "In Progress", statusColor: "#FABD00", description: "ML models integrated with Earnix Price-It to deliver real-time personalised pricing recommendations.", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
   { icon: MessageSquare,title: "AI-Powered Claims Triage",      platform: "Guidewire ClaimCenter",  status: "In Progress", statusColor: "#FABD00", description: "NLP-driven claims intake that auto-classifies severity, routes to adjusters, and flags fraud indicators.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire ClaimCenter") },
   { icon: Layers,       title: "Migration Intelligence Tool",   platform: "Duck Creek / OneShield", status: "Planned",     statusColor: "#056BFC", description: "Analyses legacy codebase and generates migration runbooks, data mapping, and risk scores automatically.", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek / OneShield") },
-  { icon: Shield,       title: "Compliance & Audit Copilot",    platform: "CCM",                    status: "Planned",     statusColor: "#056BFC", description: "Scans customer communications against regulatory requirements and suggests compliant alternatives in real time.", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+  { icon: Shield,       title: "Compliance & Audit Copilot",    platform: "SmartCOMM",              status: "Planned",     statusColor: "#056BFC", description: "Scans customer communications against regulatory requirements and suggests compliant alternatives in real time.", contentAccessRole: getContentAccessRoleForPlatform("SmartCOMM") },
 ];
 
 const aiApproach = [
@@ -162,7 +162,7 @@ export default function AiPlatforms() {
               Intelligence at the Core of Insurance
             </h1>
             <p className="text-white/75 text-base md:text-lg leading-relaxed max-w-xl">
-              Embedding AI across Guidewire, Earnix, Duck Creek, OneShield, and CCM to accelerate delivery, reduce risk, and unlock new client value.
+              Embedding AI across Guidewire, Duck Creek, OneShield, SmartCOMM, OpenText, GhostDraft, Earnix, and HyperExponential to accelerate delivery, reduce risk, and unlock new client value.
             </p>
             <div className="flex flex-wrap gap-3">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>

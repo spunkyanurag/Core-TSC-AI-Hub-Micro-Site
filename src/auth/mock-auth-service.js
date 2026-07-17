@@ -4,6 +4,7 @@ import {
   getPermissionsForRoles,
   ROLES,
 } from "@/auth/permissions";
+import { expandContentAccessRoles } from "@/lib/content-access";
 
 const SESSION_STORAGE_KEY = "tsc-hub.mock-auth.session";
 const USER_STORAGE_KEY = "tsc-hub.mock-auth.users";
@@ -17,11 +18,19 @@ const LEGACY_COMPETENCY_ROLE_MAP = {
   "Duck Creek Competency Admin": ROLES.COMPETENCY_ADMIN,
   "OneShield Competency Admin": ROLES.COMPETENCY_ADMIN,
   "CCM Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "SmartCOMM Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "OpenText Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "GhostDraft Competency Admin": ROLES.COMPETENCY_ADMIN,
+  "HyperExponential Competency Admin": ROLES.COMPETENCY_ADMIN,
   "Guidewire Admin": ROLES.COMPETENCY_ADMIN,
   "Earnix Admin": ROLES.COMPETENCY_ADMIN,
   "Duck Creek Admin": ROLES.COMPETENCY_ADMIN,
   "OneShield Admin": ROLES.COMPETENCY_ADMIN,
   "CCM Admin": ROLES.COMPETENCY_ADMIN,
+  "SmartCOMM Admin": ROLES.COMPETENCY_ADMIN,
+  "OpenText Admin": ROLES.COMPETENCY_ADMIN,
+  "GhostDraft Admin": ROLES.COMPETENCY_ADMIN,
+  "HyperExponential Admin": ROLES.COMPETENCY_ADMIN,
 };
 
 function canUseStorage() {
@@ -48,7 +57,7 @@ function normalizeCompetencies(user) {
     return [ALL_COMPETENCIES];
   }
 
-  return Array.from(new Set(competencies));
+  return Array.from(new Set(expandContentAccessRoles(competencies)));
 }
 
 function normalizeUser(user) {

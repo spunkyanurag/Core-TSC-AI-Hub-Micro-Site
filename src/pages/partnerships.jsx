@@ -45,7 +45,7 @@ const partnerTiers = [
   {
     tier: "Technology Alliance", color: "#3FD534",
     partners: [
-      { name: "Quadient / Smart Communications", type: "CCM Platform", description: "Customer communications management for personalised, compliant multi-channel delivery.", badges: ["CCM", "Digital", "Compliance"], certifications: 4, listings: 1, contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+      { name: "SmartCOMM / OpenText / GhostDraft", type: "CCM Platform", description: "Customer communications management for personalised, compliant multi-channel delivery.", badges: ["SmartCOMM", "OpenText", "GhostDraft"], certifications: 4, listings: 1, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
     ],
   },
 ];

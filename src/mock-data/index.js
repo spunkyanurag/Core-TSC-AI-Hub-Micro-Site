@@ -1,8 +1,33 @@
 import { CONTENT_ACCESS_ROLE, getContentAccessRoleForPlatform } from "@/lib/content-access";
+import competencyHierarchyData from "@/mock-data/competency-hierarchy.json";
+import tscAllStarAwardsData from "@/mock-data/tsc-all-star-awards.json";
 export { guidewireInnovationSolutions } from "@/mock-data/guidewire-innovation";
 
+export const competencyCategories = competencyHierarchyData.categories
+  .filter((category) => category.isPublished)
+  .sort((a, b) => a.displayOrder - b.displayOrder);
+
+const competencyCategoryOrder = new Map(
+  competencyCategories.map((category) => [category.categoryId, category.displayOrder])
+);
+
+export const competencyPlatforms = competencyHierarchyData.platforms
+  .filter((platform) => platform.isPublished)
+  .sort((a, b) => {
+    if (a.categoryId === b.categoryId) {
+      return a.displayOrder - b.displayOrder;
+    }
+
+    return (
+      (competencyCategoryOrder.get(a.categoryId) || 0) -
+      (competencyCategoryOrder.get(b.categoryId) || 0)
+    );
+  });
+
+export const competencyMigrationMap = competencyHierarchyData.migrationMap;
+
 export const kpis = {
-  totalCompetencies: 0,
+  totalCompetencies: competencyPlatforms.length,
   accelerators: 0,
   reusableAssets: 0,
   pocs: 0,
@@ -10,51 +35,27 @@ export const kpis = {
   integrationFrameworks: 0,
 };
 
-export const platformCoverage = [
-  { platform: "Guidewire", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GUIDEWIRE },
-  { platform: "Earnix", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX },
-  { platform: "Duck Creek", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.DUCK_CREEK },
-  { platform: "OneShield", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.ONESHIELD },
-  { platform: "CCM", coverage: 0, contentAccessRole: CONTENT_ACCESS_ROLE.CCM },
-];
+export const platformCoverage = competencyPlatforms.map((platform) => ({
+  platform: platform.platformName,
+  coverage: 0,
+  contentAccessRole: platform.contentAccessRole,
+}));
 
-export const competencies = [
-  {
-    id: "guidewire",
-    name: "Guidewire",
-    overview: "Comprehensive suite of services for Guidewire InsuranceSuite implementation and upgrades.",
-    expertise: "PolicyCenter, BillingCenter, ClaimCenter",
-    contentAccessRole: CONTENT_ACCESS_ROLE.GUIDEWIRE,
-  },
-  {
-    id: "earnix",
-    name: "Earnix",
-    overview: "Advanced rating, pricing, and product personalization.",
-    expertise: "Price-It, Personalize-It",
-    contentAccessRole: CONTENT_ACCESS_ROLE.EARNIX,
-  },
-  {
-    id: "duck-creek",
-    name: "Duck Creek",
-    overview: "SaaS core systems for P&C insurance.",
-    expertise: "Policy, Billing, Claims",
-    contentAccessRole: CONTENT_ACCESS_ROLE.DUCK_CREEK,
-  },
-  {
-    id: "oneshield",
-    name: "OneShield",
-    overview: "Core systems for P&C and MGA markets.",
-    expertise: "Enterprise, Market Solutions",
-    contentAccessRole: CONTENT_ACCESS_ROLE.ONESHIELD,
-  },
-  {
-    id: "ccm",
-    name: "CCM",
-    overview: "Customer Communications Management solutions.",
-    expertise: "Quadient, Smart Communications",
-    contentAccessRole: CONTENT_ACCESS_ROLE.CCM,
-  }
-];
+export const competencies = competencyPlatforms.map((platform) => ({
+  id: platform.platformId,
+  name: platform.platformName,
+  overview: platform.description,
+  expertise: platform.expertise,
+  contentAccessRole: platform.contentAccessRole,
+  categoryId: platform.categoryId,
+  categoryName: platform.categoryName,
+  categorySlug: platform.categorySlug,
+  platformSlug: platform.platformSlug,
+  displayOrder: platform.displayOrder,
+  icon: platform.icon,
+  status: platform.status,
+  isPublished: platform.isPublished,
+}));
 
 export const assets = [
   { id: "1", name: "GW Cloud Migration Accelerator", description: "Speeds up Guidewire on-prem to cloud migration.", businessValue: "40% Faster Delivery", platform: "Guidewire", category: "Accelerators", effortSavings: 40, reusabilityScore: 9, contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
@@ -70,7 +71,7 @@ export const pocs = [
   { id: "2", name: "Automated Quote Generation", status: "Completed", platform: "Duck Creek", impact: "Medium", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
   { id: "3", name: "Dynamic Pricing Model", status: "In Progress", platform: "Earnix", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
   { id: "4", name: "Smart Claims Triage", status: "Planned", platform: "Guidewire", impact: "Medium", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
-  { id: "5", name: "Omnichannel Communications", status: "Active", platform: "CCM", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+  { id: "5", name: "Omnichannel Communications", status: "Active", platform: "SmartCOMM", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("SmartCOMM") },
   { id: "6", name: "Legacy Data Migration", status: "Completed", platform: "OneShield", impact: "High", contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
 ];
 
@@ -141,20 +142,28 @@ export const latestUpdates = [
   },
 ];
 
+export const tscAllStarAwardsMeta = {
+  title: tscAllStarAwardsData.title,
+  quarter: tscAllStarAwardsData.quarter,
+  emptyState: tscAllStarAwardsData.emptyState,
+};
+
+export const tscAllStarAwards = tscAllStarAwardsData.awards;
+
 export const chartData = {
   coverageTrend: [
-    { month: "Jan", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Feb", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Mar", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Apr", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "May", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Jun", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Jul", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Aug", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Sep", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Oct", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Nov", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
-    { month: "Dec", Guidewire: 0, Earnix: 0, DuckCreek: 0, OneShield: 0, CCM: 0 },
+    { month: "Jan", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Feb", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Mar", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Apr", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "May", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Jun", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Jul", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Aug", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Sep", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Oct", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Nov", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
+    { month: "Dec", Guidewire: 0, DuckCreek: 0, OneShield: 0, SmartCOMM: 0, OpenText: 0, GhostDraft: 0, Earnix: 0, HyperExponential: 0 },
   ],
   assetCategories: [
     { name: "Accelerators", value: 0, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },

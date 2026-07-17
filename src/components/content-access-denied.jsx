@@ -23,7 +23,7 @@ export function ContentAccessDenied({ contentAccessRole }) {
             </p>
           </div>
           <Button asChild>
-            <Link href="/">Return to dashboard</Link>
+            <Link href="/">Return Home</Link>
           </Button>
         </CardContent>
       </Card>

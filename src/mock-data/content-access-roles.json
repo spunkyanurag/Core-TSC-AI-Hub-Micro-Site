@@ -1,8 +1,11 @@
 [
   { "id": "guidewire", "name": "Guidewire" },
-  { "id": "oneshield", "name": "OneShield" },
   { "id": "duck-creek", "name": "Duck Creek" },
-  { "id": "ccm", "name": "CCM" },
+  { "id": "oneshield", "name": "OneShield" },
+  { "id": "smartcomm", "name": "SmartCOMM" },
+  { "id": "opentext", "name": "OpenText" },
+  { "id": "ghostdraft", "name": "GhostDraft" },
   { "id": "earnix", "name": "Earnix" },
+  { "id": "hyperexponential", "name": "HyperExponential" },
   { "id": "general", "name": "General" }
 ]

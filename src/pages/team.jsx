@@ -49,7 +49,7 @@ const MaturityDots = ({ score }) => {
 const teamStats = [
   { label: "Team Strength",       value: "120+", icon: Users,      color: "#056BFC", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
   { label: "Certifications",      value: "35+",  icon: ShieldCheck,color: "#3FD534", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
-  { label: "Competencies",        value: "5",    icon: Layers,     color: "#FABD00", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { label: "Platforms",           value: "8",    icon: Layers,     color: "#FABD00", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
   { label: "Years of Experience", value: "10+",  icon: Award,      color: "#ffffff", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
@@ -58,7 +58,10 @@ const competencyTeams = [
   { platform: "Earnix",     lead: "Practice Lead - Earnix",     teamSize: "15+", certifications: 6,  maturity: 3,   capabilities: ["Price-It", "Personalize-It", "AI Pricing", "Guidewire Integration"],                    accent: "#3FD534", highlight: "Fastest-growing practice with AI pricing expertise", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
   { platform: "Duck Creek", lead: "Practice Lead - Duck Creek", teamSize: "25+", certifications: 8,  maturity: 3,   capabilities: ["Policy", "Billing", "Claims", "SaaS OnDemand", "Data Migration"],                      accent: "#FABD00", highlight: "Strong SaaS and MGA delivery track record", contentAccessRole: getContentAccessRoleForPlatform("Duck Creek") },
   { platform: "OneShield",  lead: "Practice Lead - OneShield",  teamSize: "20+", certifications: 5,  maturity: 3.5, capabilities: ["Enterprise", "Market Solutions", "MGA", "Specialty Lines"],                            accent: "#8b5cf6", highlight: "Deep specialty P&C and MGA market expertise", contentAccessRole: getContentAccessRoleForPlatform("OneShield") },
-  { platform: "CCM",        lead: "Practice Lead - CCM",        teamSize: "20+", certifications: 4,  maturity: 3.5, capabilities: ["Quadient", "Smart Communications", "Digital Delivery", "Compliance"],                  accent: "#f97316", highlight: "Customer communications across print, digital, and omnichannel", contentAccessRole: getContentAccessRoleForPlatform("CCM") },
+  { platform: "SmartCOMM",  lead: "Practice Lead - SmartCOMM",  teamSize: "12+", certifications: 4,  maturity: 3.5, capabilities: ["Templates", "Digital Delivery", "Compliance", "Correspondence"],                  accent: "#f97316", highlight: "Customer communications across print, digital, and omnichannel", contentAccessRole: getContentAccessRoleForPlatform("SmartCOMM") },
+  { platform: "OpenText",   lead: "Practice Lead - OpenText",   teamSize: "5+",  certifications: 0,  maturity: 2.5, capabilities: ["Content Services", "Forms", "Compliance"],                                      accent: "#ef4444", highlight: "Enterprise communications and document services capability", contentAccessRole: getContentAccessRoleForPlatform("OpenText") },
+  { platform: "GhostDraft", lead: "Practice Lead - GhostDraft", teamSize: "3+",  certifications: 0,  maturity: 2.5, capabilities: ["Document Automation", "Forms", "Correspondence"],                                accent: "#64748b", highlight: "Insurance document automation and generation capability", contentAccessRole: getContentAccessRoleForPlatform("GhostDraft") },
+  { platform: "HyperExponential", lead: "Practice Lead - HyperExponential", teamSize: "3+", certifications: 0, maturity: 2, capabilities: ["Pricing Models", "Decisioning", "Specialty Rating"],                     accent: "#0f766e", highlight: "Emerging rating and pricing capability for specialty insurance", contentAccessRole: getContentAccessRoleForPlatform("HyperExponential") },
 ];
 
 const capabilityAreas = [
@@ -78,7 +81,7 @@ const strengthColors = {
 
 const growthCards = [
   { icon: TrendingUp, color: "#056BFC", title: "Actively Hiring", desc: "We are growing our Earnix and AI practices. If you're a certified platform specialist or an AI enthusiast in insurance tech, we'd love to connect.", btn: "View Open Roles", btnStyle: { className: "bg-[#056BFC] hover:bg-[#056BFC]/90 text-white text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
-  { icon: Star,       color: "#3FD534", title: "Certification Programme", desc: "Core TSC sponsors platform certifications for team members across all five competencies. Reach out to your competency lead for the current certification calendar.", btn: "Certification Calendar", btnStyle: { variant: "outline", className: "border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10 text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
+  { icon: Star,       color: "#3FD534", title: "Certification Programme", desc: "Core TSC sponsors platform certifications for team members across all eight platforms. Reach out to your competency lead for the current certification calendar.", btn: "Certification Calendar", btnStyle: { variant: "outline", className: "border-[#3FD534] text-[#3FD534] hover:bg-[#3FD534]/10 text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
   { icon: Users,      color: "#FABD00", title: "Onboarding Resources", desc: "New to Core TSC? Access onboarding decks, platform guides, accelerator walkthroughs, and team intros - all in one place.", btn: "Access Resources", btnStyle: { variant: "outline", className: "text-xs" }, contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
@@ -126,7 +129,7 @@ export default function Team() {
               The Experts Behind Core TSC
             </h1>
             <p className="text-white/75 text-base md:text-lg max-w-xl leading-relaxed">
-              A team of 120+ certified specialists across Guidewire, Earnix, Duck Creek, OneShield, and CCM — driving insurance transformation for clients globally.
+              A team of 120+ certified specialists across Guidewire, Duck Creek, OneShield, SmartCOMM, OpenText, GhostDraft, Earnix, and HyperExponential - driving insurance transformation for clients globally.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Button className="bg-[#056BFC] hover:bg-[#056BFC]/90 text-white">

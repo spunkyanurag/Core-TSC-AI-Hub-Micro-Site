@@ -43,9 +43,9 @@ const LogoLight = "/assets/logo-light.png";
 const IconMark = "/assets/favicon-mark.png";
 
 const NAV_ITEMS = [
-  { path: "/",                label: "Executive Dashboard",      icon: LayoutDashboard },
+  { path: "/",                label: "Home",                     icon: LayoutDashboard, aliases: ["/home", "/executive-dashboard"] },
+  { path: "/competency-center", label: "Competency Center",      icon: Layers, aliases: ["/competencies"] },
   { path: "/ai-platforms",    label: "AI for Core Platforms",    icon: BotMessageSquare },
-  { path: "/competencies",    label: "Competency Center",        icon: Layers },
   { path: "/innovation",      label: "Innovation Lab",           icon: Lightbulb },
   { path: "/demo-center",     label: "Demo Center",              icon: PlaySquare },
   { path: "/success-stories", label: "Success Stories",          icon: Trophy },
@@ -61,6 +61,9 @@ const NAV_ITEMS = [
 ];
 
 const ROUTE_LABELS = {
+  "/home": "Home",
+  "/executive-dashboard": "Home",
+  "/competencies": "Competency Center",
   "/earnix-resources": "Earnix Resources",
   "/earnix-demos": "Earnix Demo Library",
   "/innovation/guidewire": "Guidewire Innovation",
@@ -91,16 +94,25 @@ export function Layout({ children }) {
   );
   function routeMatches(path) {
     if (path === "/") {
-      return location === "/";
+      return location === "/" || location === "/home" || location === "/executive-dashboard";
     }
 
-    return location === path || location.startsWith(`${path}/`);
+    const item = NAV_ITEMS.find((navItem) => navItem.path === path);
+    const candidatePaths = [path, ...(item?.aliases || [])];
+
+    return candidatePaths.some(
+      (candidatePath) =>
+        location === candidatePath || location.startsWith(`${candidatePath}/`)
+    );
   }
 
   const matchedNavItem = NAV_ITEMS.find((item) => routeMatches(item.path));
   const currentNav = {
     label:
       ROUTE_LABELS[location] ||
+      (location.startsWith("/competency-center")
+        ? "Competency Center"
+        : undefined) ||
       (location.startsWith("/innovation/guidewire")
         ? "Guidewire Innovation"
         : matchedNavItem?.label || NAV_ITEMS[0].label),

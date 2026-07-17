@@ -6,7 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { kpis, platformCoverage, chartData, activities, latestUpdates } from "@/mock-data";
+import {
+  kpis,
+  platformCoverage,
+  chartData,
+  activities,
+  latestUpdates,
+  tscAllStarAwards,
+  tscAllStarAwardsMeta,
+} from "@/mock-data";
 import { COMPETENCY_ADMIN_ROLES, ROLES, useAuth } from "@/auth";
 import { filterContentForUser } from "@/lib/content-access";
 import {
@@ -15,7 +23,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import {
-  ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play,
+  ArrowRight, ArrowUpRight, Award, ChevronLeft, ChevronRight, Pause, Play,
   Target, Box, FlaskConical, Cpu, Cable, Sparkles, Layers,
 } from "lucide-react";
 
@@ -107,7 +115,7 @@ function UpdateArtwork({ update }) {
   );
 }
 
-function LatestUpdates() {
+function TscUpdates() {
   const { user } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -156,7 +164,7 @@ function LatestUpdates() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55 }}
-      aria-labelledby="latest-updates-title"
+      aria-labelledby="tsc-updates-title"
       onMouseEnter={() => setIsInteracting(true)}
       onMouseLeave={() => setIsInteracting(false)}
       onFocusCapture={() => setIsInteracting(true)}
@@ -175,8 +183,8 @@ function LatestUpdates() {
             <span className="h-px w-8 bg-[#056BFC]" />
             What&apos;s new
           </div>
-          <h2 id="latest-updates-title" className="text-2xl font-bold tracking-tight text-foreground">
-            Latest updates
+          <h2 id="tsc-updates-title" className="text-2xl font-bold tracking-tight text-foreground">
+            TSC Updates
           </h2>
         </div>
         <Link
@@ -192,7 +200,7 @@ function LatestUpdates() {
         className="relative min-h-[360px] overflow-hidden rounded-[1.85rem] bg-gradient-to-br from-[#6345cf] via-[#353f9c] to-[#101e56] shadow-[0_28px_70px_rgba(20,36,92,0.22)] md:min-h-[410px]"
         role="region"
         aria-roledescription="carousel"
-        aria-label="Latest Core TSC updates"
+        aria-label="TSC updates carousel"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.11),transparent_36%)]" />
         <UpdateArtwork update={update} />
@@ -236,7 +244,7 @@ function LatestUpdates() {
       </div>
 
       {total > 1 && (
-        <div className="flex items-center justify-center gap-3" aria-label="Carousel controls">
+        <div className="flex items-center justify-center gap-3" aria-label="TSC updates carousel controls">
           <button
             type="button"
             onClick={() => setIsPaused((current) => !current)}
@@ -281,6 +289,138 @@ function LatestUpdates() {
   );
 }
 
+function getInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function AwardCard({ award }) {
+  const awardeeName = award.awardeeName || "Awardee details pending";
+  const photoUrl = award.employeePhotoUrl || award.photographUrl || award.avatarUrl;
+
+  return (
+    <article
+      tabIndex={0}
+      className="group h-full rounded-lg border border-border/70 bg-card p-5 shadow-sm transition hover:-translate-y-1 hover:border-[#056BFC]/35 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#056BFC] focus-visible:ring-offset-2"
+      aria-label={`${award.awardCategory || "TSC All-Star Award"} for ${awardeeName}`}
+    >
+      <div className="flex items-start gap-4">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={awardeeName}
+            className="h-14 w-14 rounded-full border border-border object-cover"
+          />
+        ) : (
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#056BFC]/20 bg-[#056BFC]/10 text-sm font-bold text-[#055FE0]">
+            {getInitials(awardeeName) || <Award className="h-6 w-6" />}
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="border-[#FABD00]/35 bg-[#FABD00]/12 text-[#9A6500]">
+              {award.awardCategory || "Award category pending"}
+            </Badge>
+            {award.badge && (
+              <Badge variant="secondary" className="font-normal">
+                {award.badge}
+              </Badge>
+            )}
+          </div>
+          <h3 className="mt-3 text-lg font-semibold text-[#303030] dark:text-white">
+            {awardeeName}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {award.competency || "Competency pending"}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-4 text-sm">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Project or Account</p>
+            <p className="mt-1 font-medium text-foreground">{award.projectOrAccount || "To be published"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Quarter</p>
+            <p className="mt-1 font-medium text-foreground">{award.quarter || tscAllStarAwardsMeta.quarter}</p>
+          </div>
+        </div>
+        <p className="leading-6 text-muted-foreground">
+          {award.achievementSummary || "Achievement summary will be added with the final award details."}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function TscAllStarAwards() {
+  const publishedAwards = tscAllStarAwards
+    .filter((award) => award.isPublished !== false)
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.05 }}
+      aria-labelledby="tsc-awards-title"
+      className="space-y-4"
+    >
+      <div className="flex flex-col gap-3 px-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[#9A6500]">
+            <span className="h-px w-8 bg-[#FABD00]" />
+            Recognition
+          </div>
+          <h2 id="tsc-awards-title" className="text-2xl font-bold tracking-tight text-foreground">
+            {tscAllStarAwardsMeta.title}
+          </h2>
+        </div>
+        <Badge variant="outline" className="w-fit border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]">
+          {publishedAwards.length} published
+        </Badge>
+      </div>
+
+      {publishedAwards.length ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {publishedAwards.map((award) => (
+            <AwardCard key={award.id || `${award.awardeeName}-${award.displayOrder}`} award={award} />
+          ))}
+        </div>
+      ) : (
+        <Card className="rounded-lg border-dashed border-[#056BFC]/25 bg-white shadow-sm dark:bg-card">
+          <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#FABD00]/14 text-[#9A6500]">
+                <Award className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-semibold text-[#303030] dark:text-white">
+                  Award details pending
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {tscAllStarAwardsMeta.emptyState}
+                </p>
+              </div>
+            </div>
+            <Badge variant="secondary" className="w-fit">
+              {tscAllStarAwardsMeta.quarter}
+            </Badge>
+          </CardContent>
+        </Card>
+      )}
+    </motion.section>
+  );
+}
+
 export default function Dashboard() {
   const COLORS = ["#056BFC", "#3FD534", "#FABD00", "#60a5fa", "#16a34a"];
   const { hasRole, user } = useAuth();
@@ -293,10 +433,13 @@ export default function Dashboard() {
   );
   const visibleCoverageSeries = [
     { key: "Guidewire", color: "#056BFC", fill: "url(#colorGw)", fillOpacity: 1 },
-    { key: "Earnix", color: "#3FD534", fill: "transparent" },
     { key: "DuckCreek", color: "#FABD00", fill: "transparent" },
     { key: "OneShield", color: "#60A5FA", fill: "transparent" },
-    { key: "CCM", color: "#16A34A", fill: "transparent" },
+    { key: "SmartCOMM", color: "#16A34A", fill: "transparent" },
+    { key: "OpenText", color: "#F97316", fill: "transparent" },
+    { key: "GhostDraft", color: "#8B5CF6", fill: "transparent" },
+    { key: "Earnix", color: "#3FD534", fill: "transparent" },
+    { key: "HyperExponential", color: "#0F766E", fill: "transparent" },
   ].filter((series) => visiblePlatformKeys.has(series.key));
   const canViewManagementModules = hasRole([
     ROLES.SUPER_ADMIN,
@@ -306,7 +449,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
 
-      <LatestUpdates />
+      <TscUpdates />
+
+      <TscAllStarAwards />
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       {false && (
@@ -646,7 +791,7 @@ export default function Dashboard() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest updates across the hub</CardDescription>
+                <CardDescription>TSC updates across the hub</CardDescription>
               </div>
               <Button variant="outline" size="sm">View All</Button>
             </CardHeader>

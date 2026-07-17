@@ -44,6 +44,20 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/home" component={Dashboard} />
+      <Route path="/executive-dashboard" component={Dashboard} />
+      <Route path="/competency-center/:categorySlug/:platformSlug">
+        {(params) => (
+          <Competencies
+            categorySlug={params.categorySlug}
+            platformSlug={params.platformSlug}
+          />
+        )}
+      </Route>
+      <Route path="/competency-center/:categorySlug">
+        {(params) => <Competencies categorySlug={params.categorySlug} />}
+      </Route>
+      <Route path="/competency-center" component={Competencies} />
       <Route path="/competencies" component={Competencies} />
       <Route path="/assets" component={Assets} />
       <Route path="/innovation/guidewire/:slug">

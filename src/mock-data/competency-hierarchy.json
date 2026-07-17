@@ -1,0 +1,162 @@
+{
+  "categories": [
+    {
+      "categoryId": "pc-insurance-platforms",
+      "categoryName": "P&C Insurance Platforms",
+      "categorySlug": "pc-insurance-platforms",
+      "displayOrder": 1,
+      "description": "Core policy, billing, claims, and administration platforms for P&C carriers and MGA markets.",
+      "icon": "ShieldCheck",
+      "isPublished": true
+    },
+    {
+      "categoryId": "ccm-platforms",
+      "categoryName": "CCM Platforms",
+      "categorySlug": "ccm-platforms",
+      "displayOrder": 2,
+      "description": "Customer communications management platforms for compliant, personalized print and digital journeys.",
+      "icon": "MessagesSquare",
+      "isPublished": true
+    },
+    {
+      "categoryId": "rating-and-pricing",
+      "categoryName": "Rating & Pricing",
+      "categorySlug": "rating-and-pricing",
+      "displayOrder": 3,
+      "description": "Advanced rating, pricing, simulation, and product personalization platforms.",
+      "icon": "LineChart",
+      "isPublished": true
+    }
+  ],
+  "platforms": [
+    {
+      "categoryId": "pc-insurance-platforms",
+      "categoryName": "P&C Insurance Platforms",
+      "categorySlug": "pc-insurance-platforms",
+      "platformId": "guidewire",
+      "platformName": "Guidewire",
+      "platformSlug": "guidewire",
+      "displayOrder": 1,
+      "description": "InsuranceSuite implementation, upgrades, cloud transitions, integrations, and platform modernization.",
+      "icon": "ShieldCheck",
+      "status": "Active",
+      "isPublished": true,
+      "contentAccessRole": "Guidewire",
+      "expertise": "PolicyCenter, BillingCenter, ClaimCenter",
+      "resourceHref": "/innovation/guidewire"
+    },
+    {
+      "categoryId": "pc-insurance-platforms",
+      "categoryName": "P&C Insurance Platforms",
+      "categorySlug": "pc-insurance-platforms",
+      "platformId": "duck-creek",
+      "platformName": "Duck Creek",
+      "platformSlug": "duck-creek",
+      "displayOrder": 2,
+      "description": "SaaS policy, billing, claims, data migration, and operational transformation for P&C insurers.",
+      "icon": "Workflow",
+      "status": "Active",
+      "isPublished": true,
+      "contentAccessRole": "Duck Creek",
+      "expertise": "Policy, Billing, Claims, SaaS OnDemand"
+    },
+    {
+      "categoryId": "pc-insurance-platforms",
+      "categoryName": "P&C Insurance Platforms",
+      "categorySlug": "pc-insurance-platforms",
+      "platformId": "oneshield",
+      "platformName": "OneShield",
+      "platformSlug": "oneshield",
+      "displayOrder": 3,
+      "description": "Core administration capabilities for specialty P&C, commercial lines, and MGA operating models.",
+      "icon": "Layers",
+      "status": "Active",
+      "isPublished": true,
+      "contentAccessRole": "OneShield",
+      "expertise": "Enterprise, Market Solutions, MGA"
+    },
+    {
+      "categoryId": "ccm-platforms",
+      "categoryName": "CCM Platforms",
+      "categorySlug": "ccm-platforms",
+      "platformId": "smartcomm",
+      "platformName": "SmartCOMM",
+      "platformSlug": "smartcomm",
+      "displayOrder": 1,
+      "description": "Template-driven customer communications across digital, print, and omnichannel insurance workflows.",
+      "icon": "MessagesSquare",
+      "status": "Active",
+      "isPublished": true,
+      "contentAccessRole": "SmartCOMM",
+      "expertise": "Templates, Correspondence, Digital Delivery"
+    },
+    {
+      "categoryId": "ccm-platforms",
+      "categoryName": "CCM Platforms",
+      "categorySlug": "ccm-platforms",
+      "platformId": "opentext",
+      "platformName": "OpenText",
+      "platformSlug": "opentext",
+      "displayOrder": 2,
+      "description": "Enterprise content and communications capabilities for compliant customer document journeys.",
+      "icon": "FileText",
+      "status": "Published",
+      "isPublished": true,
+      "contentAccessRole": "OpenText",
+      "expertise": "Content Services, Forms, Compliance"
+    },
+    {
+      "categoryId": "ccm-platforms",
+      "categoryName": "CCM Platforms",
+      "categorySlug": "ccm-platforms",
+      "platformId": "ghostdraft",
+      "platformName": "GhostDraft",
+      "platformSlug": "ghostdraft",
+      "displayOrder": 3,
+      "description": "Document automation and correspondence generation for insurance forms and policyholder communications.",
+      "icon": "FileSignature",
+      "status": "Published",
+      "isPublished": true,
+      "contentAccessRole": "GhostDraft",
+      "expertise": "Document Automation, Forms, Correspondence"
+    },
+    {
+      "categoryId": "rating-and-pricing",
+      "categoryName": "Rating & Pricing",
+      "categorySlug": "rating-and-pricing",
+      "platformId": "earnix",
+      "platformName": "Earnix",
+      "platformSlug": "earnix",
+      "displayOrder": 1,
+      "description": "Advanced rating, pricing, segmentation, and product personalization for insurance growth teams.",
+      "icon": "LineChart",
+      "status": "Active",
+      "isPublished": true,
+      "contentAccessRole": "Earnix",
+      "expertise": "Price-It, Personalize-It, Rating Models",
+      "resourceHref": "/earnix-resources"
+    },
+    {
+      "categoryId": "rating-and-pricing",
+      "categoryName": "Rating & Pricing",
+      "categorySlug": "rating-and-pricing",
+      "platformId": "hyperexponential",
+      "platformName": "HyperExponential",
+      "platformSlug": "hyperexponential",
+      "displayOrder": 2,
+      "description": "Modern pricing decisioning and model deployment capabilities for specialty and commercial insurance.",
+      "icon": "Gauge",
+      "status": "Published",
+      "isPublished": true,
+      "contentAccessRole": "HyperExponential",
+      "expertise": "Pricing Models, Decisioning, Specialty Rating"
+    }
+  ],
+  "migrationMap": {
+    "Guidewire": ["Guidewire"],
+    "Duck Creek": ["Duck Creek"],
+    "OneShield": ["OneShield"],
+    "Earnix": ["Earnix"],
+    "CCM": ["SmartCOMM", "OpenText", "GhostDraft"]
+  }
+}

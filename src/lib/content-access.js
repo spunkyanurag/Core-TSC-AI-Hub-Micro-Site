@@ -20,8 +20,22 @@ const platformRoleMatchers = [
   { token: "oneshield", role: CONTENT_ACCESS_ROLE.ONESHIELD },
   { token: "duckcreek", role: CONTENT_ACCESS_ROLE.DUCK_CREEK },
   { token: "earnix", role: CONTENT_ACCESS_ROLE.EARNIX },
-  { token: "ccm", role: CONTENT_ACCESS_ROLE.CCM },
+  { token: "hyperexponential", role: CONTENT_ACCESS_ROLE.HYPEREXPONENTIAL },
+  { token: "smartcomm", role: CONTENT_ACCESS_ROLE.SMARTCOMM },
+  { token: "smartcommunications", role: CONTENT_ACCESS_ROLE.SMARTCOMM },
+  { token: "quadient", role: CONTENT_ACCESS_ROLE.SMARTCOMM },
+  { token: "opentext", role: CONTENT_ACCESS_ROLE.OPENTEXT },
+  { token: "ghostdraft", role: CONTENT_ACCESS_ROLE.GHOSTDRAFT },
+  { token: "ccm", role: CONTENT_ACCESS_ROLE.SMARTCOMM },
 ];
+
+const legacyContentAccessRoleMigration = {
+  CCM: [
+    CONTENT_ACCESS_ROLE.SMARTCOMM,
+    CONTENT_ACCESS_ROLE.OPENTEXT,
+    CONTENT_ACCESS_ROLE.GHOSTDRAFT,
+  ],
+};
 
 export class ContentAccessForbiddenError extends Error {
   constructor(contentAccessRole) {
@@ -50,6 +64,14 @@ export function getContentAccessRoleForPlatform(platform = "") {
   return CONTENT_ACCESS_ROLE_GENERAL;
 }
 
+export function expandContentAccessRoles(roles = []) {
+  return Array.from(
+    new Set(
+      roles.flatMap((role) => legacyContentAccessRoleMigration[role] || role)
+    )
+  );
+}
+
 function isSuperAdmin(user) {
   return user?.roles?.includes("Super Admin");
 }
@@ -63,10 +85,12 @@ export function getUserContentAccessRoles(user) {
     return contentAccessRoles.map((role) => role.name);
   }
 
+  const expandedCompetencies = expandContentAccessRoles(user.competencies || []);
+
   return Array.from(
     new Set([
       CONTENT_ACCESS_ROLE_GENERAL,
-      ...(user.competencies || []).filter(isSupportedContentAccessRole),
+      ...expandedCompetencies.filter(isSupportedContentAccessRole),
     ])
   );
 }
@@ -76,16 +100,36 @@ export function userCanViewContent(user, contentOrRole) {
     typeof contentOrRole === "string"
       ? contentOrRole
       : contentOrRole?.contentAccessRole;
+  const candidateRoles = expandContentAccessRoles([contentAccessRole]);
 
-  if (!isSupportedContentAccessRole(contentAccessRole)) {
+  if (!candidateRoles.some(isSupportedContentAccessRole)) {
     return false;
   }
 
-  if (contentAccessRole === CONTENT_ACCESS_ROLE_GENERAL) {
+  if (candidateRoles.includes(CONTENT_ACCESS_ROLE_GENERAL)) {
     return Boolean(user);
   }
 
-  return getUserContentAccessRoles(user).includes(contentAccessRole);
+  const userAccessRoles = getUserContentAccessRoles(user);
+
+  return candidateRoles.some((role) => userAccessRoles.includes(role));
+}
+
+export function userCanManageContentRole(user, contentOrRole) {
+  const contentAccessRole =
+    typeof contentOrRole === "string"
+      ? contentOrRole
+      : contentOrRole?.contentAccessRole;
+
+  if (!user?.permissions?.includes("competencies:manage")) {
+    return false;
+  }
+
+  if (isSuperAdmin(user)) {
+    return true;
+  }
+
+  return userCanViewContent(user, contentAccessRole);
 }
 
 export function filterContentForUser(items = [], user) {
