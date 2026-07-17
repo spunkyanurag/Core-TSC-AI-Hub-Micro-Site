@@ -45,21 +45,6 @@ const iconMap = {
   Gauge,
 };
 
-const categoryAccents = {
-  "pc-insurance-platforms": {
-    ring: "border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]",
-    gradient: "from-[#056BFC] via-[#1557B7] to-[#0F172A]",
-  },
-  "ccm-platforms": {
-    ring: "border-[#3FD534]/25 bg-[#3FD534]/10 text-[#18772A]",
-    gradient: "from-[#14B8A6] via-[#0F766E] to-[#0F172A]",
-  },
-  "rating-and-pricing": {
-    ring: "border-[#FABD00]/35 bg-[#FABD00]/12 text-[#9A6500]",
-    gradient: "from-[#FABD00] via-[#D97706] to-[#0F172A]",
-  },
-};
-
 const platformGraphics = {
   guidewire: { logo: "/assets/guidewire.svg", gradient: "from-[#2563eb] via-[#1d4ed8] to-[#0f172a]" },
   "duck-creek": { logo: "/assets/duck-creek.svg", gradient: "from-[#a855f7] via-[#7c3aed] to-[#0f172a]" },
@@ -120,49 +105,6 @@ function filterPlatforms(platforms, search) {
       .join(" ")
       .toLowerCase()
       .includes(normalizedSearch)
-  );
-}
-
-function CategoryCard({ category, totalPlatforms, visiblePlatforms }) {
-  const Icon = getIcon(category.icon);
-  const accent = categoryAccents[category.categorySlug] || categoryAccents["pc-insurance-platforms"];
-
-  return (
-    <Card className="h-full rounded-lg border-border/60 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className={`flex h-12 w-12 items-center justify-center rounded-lg border ${accent.ring}`}>
-            <Icon className="h-6 w-6" />
-          </div>
-          <Badge variant="outline" className={accent.ring}>
-            {totalPlatforms} platforms
-          </Badge>
-        </div>
-        <CardTitle className="text-xl">{category.categoryName}</CardTitle>
-        <CardDescription className="leading-6">{category.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {visiblePlatforms.length ? (
-            visiblePlatforms.map((platform) => (
-              <Badge key={platform.platformId} variant="secondary" className="font-normal">
-                {platform.platformName}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-sm text-muted-foreground">
-              No platform content available for your account.
-            </span>
-          )}
-        </div>
-        <Button asChild variant="outline" size="sm" className="w-full justify-between">
-          <Link href={`/competency-center/${category.categorySlug}`}>
-            Explore Platforms
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -365,21 +307,6 @@ export default function Competencies({ categorySlug, platformSlug }) {
     [search, visiblePlatforms]
   );
 
-  const visibleCategoryCards = competencyCategories.map((category) => {
-    const categoryPlatforms = competencyPlatforms.filter(
-      (platform) => platform.categoryId === category.categoryId
-    );
-    const accessiblePlatforms = visiblePlatforms.filter(
-      (platform) => platform.categoryId === category.categoryId
-    );
-
-    return {
-      category,
-      totalPlatforms: categoryPlatforms.length,
-      visiblePlatforms: accessiblePlatforms,
-    };
-  });
-
   const visiblePlatformGroups = competencyCategories
     .filter(
       (category) =>
@@ -434,14 +361,6 @@ export default function Competencies({ categorySlug, platformSlug }) {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {!platformSlug && (
-        <section className="grid gap-5 md:grid-cols-3">
-          {visibleCategoryCards.map((item) => (
-            <CategoryCard key={item.category.categoryId} {...item} />
-          ))}
-        </section>
       )}
 
       <section className="rounded-lg border bg-card p-4 shadow-sm">
