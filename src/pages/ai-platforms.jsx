@@ -98,6 +98,7 @@ const aiRoadmap = [
 
 const aiOfferings = [
   { icon: Brain,        title: "GenAI Underwriting Assistant",  platform: "Guidewire",             status: "Demo Ready",  statusColor: "#3FD534", description: "LLM-powered assistant that drafts underwriting rules, risk summaries, and policy recommendations from plain-language prompts.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
+  { icon: FileSearch,   title: "AI Assisted Guidewire Code Analyzer", platform: "Guidewire",        status: "Assessment Ready", statusColor: "#056BFC", description: "AI-assisted review accelerator that produces evidence-backed risk assessment reports for Guidewire code and configuration changes without changing the code.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire") },
   { icon: Zap,          title: "Automated Test Generation",     platform: "Multi-Platform",         status: "Demo Ready",  statusColor: "#3FD534", description: "AI generates regression test scripts from user stories and change logs, reducing manual QA effort by up to 60%.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
   { icon: Cpu,          title: "Dynamic Pricing with Earnix AI",platform: "Earnix",                 status: "In Progress", statusColor: "#FABD00", description: "ML models integrated with Earnix Price-It to deliver real-time personalised pricing recommendations.", contentAccessRole: getContentAccessRoleForPlatform("Earnix") },
   { icon: MessageSquare,title: "AI-Powered Claims Triage",      platform: "Guidewire ClaimCenter",  status: "In Progress", statusColor: "#FABD00", description: "NLP-driven claims intake that auto-classifies severity, routes to adjusters, and flags fraud indicators.", contentAccessRole: getContentAccessRoleForPlatform("Guidewire ClaimCenter") },
@@ -315,6 +316,113 @@ const guidewireAdoptionRoadmap = [
   },
 ];
 
+const guidewireCodeAnalyzer = {
+  title: "AI Assisted Guidewire Code Analyzer",
+  overview:
+    "Analyzer is an AI-assisted review accelerator designed for Guidewire delivery teams. It reviews code and configuration changes to highlight real, evidence-backed risks before they move further through the delivery lifecycle. These risks may include runtime failures, weak exception handling, mapper or schema inconsistencies, integration issues, rating and product model gaps, and workflow or UI defects.",
+  intent:
+    "Analyzer does not change the code. It produces a focused assessment report that helps developers, reviewers, architects, and quality leads understand where the risk is, confirm what is valid, and decide which findings should move into a controlled fix process.",
+  businessProblem:
+    "In Guidewire programs, some of the most painful defects are not always caught during regular code reviews. Issues such as runtime null dereferences, incomplete exception handling, mapper/schema mismatches, rating failures, invalid product model values, integration timeouts, work queue failures, and technical errors shown to users often surface late in testing or stabilization.",
+  noiseControl:
+    "Generic AI reviews can help, but they can also create unnecessary noise. They may recommend defensive coding everywhere, flag DB-backed entity fields incorrectly, or report issues without enough proof. Analyzer is intended to reduce that noise by reporting only what can be supported with visible evidence and by applying Guidewire-specific false-positive controls.",
+  capabilities: [
+    {
+      name: "Exception handling",
+      detail: "Gaps in how integration, plugins, APIs, workflows, work queues, and user-facing errors are handled.",
+    },
+    {
+      name: "NPE risk detection",
+      detail: "Real nullable parent objects or runtime objects that may fail at execution time, including requests, responses, query results, collections, maps, DTOs, payloads, and generated rating objects.",
+    },
+    {
+      name: "Mapping & schema",
+      detail: "Incorrect mapper references, schema type mismatches, broken updater/swagger/apiconfig/access definitions, duplicate paths, and unsupported properties.",
+    },
+    {
+      name: "Rating & product model",
+      detail: "Missing or invalid option codes, required rating values, generated routine/DTO mismatches, and product model configuration issues.",
+    },
+    {
+      name: "Integration & workflow",
+      detail: "Token handling, timeout behavior, service response validation, migration/work item errors, and concurrency risks.",
+    },
+    {
+      name: "PCF / UI / rules",
+      detail: "UI rendering problems, onEnter failures, raw exception leakage, risky rule conditions, and required-field validation gaps.",
+    },
+  ],
+  guardrails: [
+    {
+      mustNotFlag: "Simple access to entity fields or DB-backed properties as an NPE.",
+      reportInstead:
+        "Check whether the parent object can be null. Treat field-value concerns as data, validation, product model, DBCC, or manual-review items.",
+    },
+    {
+      mustNotFlag: "Coverage or product model access that is already protected by visible exists checks.",
+      reportInstead:
+        "If a visible guard exists, do not report it as an NPE. If the business logic still looks questionable, mark it for manual review.",
+    },
+    {
+      mustNotFlag: "Theoretical issues without visible evidence.",
+      reportInstead:
+        "Point to the exact snippet, file path, mapper/schema path, rule, or configuration reference. If evidence is missing, classify it as Manual Review Required.",
+    },
+    {
+      mustNotFlag: "Broad refactoring or blanket null-check recommendations.",
+      reportInstead:
+        "Suggest only targeted fixes and send confirmed items to a separate, controlled fixer workflow.",
+    },
+  ],
+  operatingModel: [
+    {
+      step: "1. Scope",
+      input: "PR diff, commit range, or specific module path",
+      output: "Relevant files and scope constraints",
+      decision: "Proceed only when the scope is clear",
+    },
+    {
+      step: "2. Analyze",
+      input: "Guidewire code/config in scope",
+      output: "File-level risks with evidence and severity",
+      decision: "Reviewer validates the findings",
+    },
+    {
+      step: "3. Triage",
+      input: "Analyzer report",
+      output: "Confirmed issues, false positives, manual-review items",
+      decision: "Move forward only with confirmed issues",
+    },
+    {
+      step: "4. Fix path",
+      input: "Validated findings",
+      output: "Input for controlled fixing or manual remediation",
+      decision: "Avoid automatic business-logic changes",
+    },
+  ],
+  benefits: [
+    {
+      audience: "Developers",
+      items: ["Earlier risk visibility", "Pre-PR quality check", "Safer coding habits"],
+    },
+    {
+      audience: "Reviewers",
+      items: ["Evidence-based review focus", "Less speculative feedback", "Clear severity triage"],
+    },
+    {
+      audience: "Architects",
+      items: ["Pattern-level governance", "Root-cause trends", "Reusable standards"],
+    },
+    {
+      audience: "Programs",
+      items: ["Reduced defect leakage", "Repeatable review model", "Path to PR/CI integration"],
+    },
+  ],
+  futureEvolution:
+    "Over time, Analyzer can mature from a guided prompt into a reusable quality-control capability for Guidewire programs. It can be converted into Guidewire Studio or Gosu Analyzer rules, connected with Bitbucket or Git-based PR workflows, or run as an AI-assisted review agent that produces structured reports for developers and architects to review and approve.",
+  contentAccessRole: guidewireAiRole,
+};
+
 const guidewireAiStats = [
   { label: "AI-DLC phases", value: guidewireAiDlcColumns.length, suffix: "", icon: Workflow },
   {
@@ -323,17 +431,24 @@ const guidewireAiStats = [
     suffix: "",
     icon: Layers,
   },
+  { label: "Analyzer capabilities", value: guidewireCodeAnalyzer.capabilities.length, suffix: "", icon: FileSearch },
   { label: "Multi-agent capabilities", value: guidewireMultiAgentCapabilities.length, suffix: "", icon: BotMessageSquare },
-  { label: "Adoption runway", value: 45, suffix: " days", icon: Gauge },
+  { label: "Operating steps", value: guidewireCodeAnalyzer.operatingModel.length, suffix: "", icon: ClipboardCheck },
 ];
 
 const guidewireAiSearchItems = [
   "AI-DLC Use Cases Progression for Guidewire Platform",
   "AI Use Cases across AI-DLC",
   "AI Adoption Roadmap (Pilot with COUNTRY/Pekin) - June 2026",
+  guidewireCodeAnalyzer.title,
+  guidewireCodeAnalyzer.overview,
+  guidewireCodeAnalyzer.businessProblem,
+  guidewireCodeAnalyzer.futureEvolution,
   ...guidewireAiDlcColumns.flatMap((column) => column.items),
   ...guidewireMultiAgentCapabilities.map((item) => item.label),
   ...guidewireAdoptionRoadmap.flatMap((phase) => phase.items),
+  ...guidewireCodeAnalyzer.capabilities.flatMap((capability) => [capability.name, capability.detail]),
+  ...guidewireCodeAnalyzer.guardrails.flatMap((guardrail) => [guardrail.mustNotFlag, guardrail.reportInstead]),
 ];
 
 const statusIcon = (s) => {
@@ -428,6 +543,176 @@ function GuidewireRoadmapPhase({ phase }) {
   );
 }
 
+function GuidewireCodeAnalyzerSection() {
+  return (
+    <section className="space-y-6">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]">
+            Guidewire
+          </Badge>
+          <Badge variant="outline" className="border-[#3FD534]/25 bg-[#3FD534]/10 text-[#18772A]">
+            Assessment accelerator
+          </Badge>
+          <Badge variant="outline" className="border-[#FABD00]/35 bg-[#FABD00]/10 text-[#9A6500]">
+            No automatic code changes
+          </Badge>
+        </div>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight">{guidewireCodeAnalyzer.title}</h2>
+        <p className="mt-2 max-w-4xl text-sm leading-7 text-muted-foreground">
+          {guidewireCodeAnalyzer.overview}
+        </p>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <Card className="rounded-lg border-[#056BFC]/20 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileSearch className="h-5 w-5 text-[#056BFC]" />
+              Analyzer Intent
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-7 text-muted-foreground">{guidewireCodeAnalyzer.intent}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-lg border-[#FABD00]/35 bg-[#FABD00]/5 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MonitorCheck className="h-5 w-5 text-[#9A6500]" />
+              Business Problem
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm leading-7 text-muted-foreground">{guidewireCodeAnalyzer.businessProblem}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="rounded-lg border-[#3FD534]/25 bg-[#3FD534]/5 shadow-sm">
+        <CardContent className="p-5">
+          <div className="flex gap-3">
+            <Shield className="mt-1 h-5 w-5 shrink-0 text-[#18772A]" />
+            <p className="text-sm leading-7 text-muted-foreground">{guidewireCodeAnalyzer.noiseControl}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">Key Capabilities</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Evidence-backed checks for Guidewire code, configuration, integrations, workflows, product models, and UI.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {guidewireCodeAnalyzer.capabilities.map((capability) => (
+            <Card key={capability.name} className="h-full rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:border-[#056BFC]/35 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Code2 className="h-4 w-4 text-[#056BFC]" />
+                  {capability.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-6 text-muted-foreground">{capability.detail}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">Guardrails and False-Positive Controls</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Analyzer separates evidence-backed risks from speculation and routes uncertain items to manual review.
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {guidewireCodeAnalyzer.guardrails.map((guardrail) => (
+            <Card key={guardrail.mustNotFlag} className="rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+              <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-destructive">Analyzer must not flag</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{guardrail.mustNotFlag}</p>
+                </div>
+                <div className="rounded-lg border border-[#3FD534]/25 bg-[#3FD534]/8 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#18772A]">Classify or report instead</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{guardrail.reportInstead}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">Recommended Operating Model</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            A controlled workflow from scope definition to validated fix path.
+          </p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {guidewireCodeAnalyzer.operatingModel.map((step, index) => (
+            <Card key={step.step} className="h-full rounded-lg border-[#056BFC]/20 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#056BFC] text-sm font-bold text-white">
+                    {index + 1}
+                  </span>
+                  <CardTitle className="text-base">{step.step}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm leading-6">
+                <p><span className="font-semibold text-foreground">Input:</span> <span className="text-muted-foreground">{step.input}</span></p>
+                <p><span className="font-semibold text-foreground">Output:</span> <span className="text-muted-foreground">{step.output}</span></p>
+                <p><span className="font-semibold text-foreground">Decision:</span> <span className="text-muted-foreground">{step.decision}</span></p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-xl font-bold tracking-tight">Benefits</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Value by stakeholder group across delivery, review, architecture, and program governance.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {guidewireCodeAnalyzer.benefits.map((benefit) => (
+            <Card key={benefit.audience} className="h-full rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:border-[#3FD534]/35 hover:shadow-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{benefit.audience}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BulletList items={benefit.items} color="#3FD534" compact />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <Card className="overflow-hidden rounded-lg border-[#056BFC]/20 shadow-sm">
+        <div className="h-2 bg-gradient-to-r from-[#056BFC] via-[#3FD534] to-[#FABD00]" />
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-[#056BFC]" />
+            Future Evolution
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm leading-7 text-muted-foreground">{guidewireCodeAnalyzer.futureEvolution}</p>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
 function GuidewireAiDetail() {
   const { user } = useAuth();
   const [activeSection, setActiveSection] = useState("progression");
@@ -439,6 +724,7 @@ function GuidewireAiDetail() {
   const sectionTabs = [
     { id: "progression", label: "Progression", icon: GitBranch },
     { id: "use-cases", label: "AI-DLC Use Cases", icon: Boxes },
+    { id: "code-analyzer", label: "Code Analyzer", icon: FileSearch },
     { id: "roadmap", label: "Adoption Roadmap", icon: Target },
   ];
 
@@ -468,8 +754,8 @@ function GuidewireAiDetail() {
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-8 text-white/78">
               A consolidated Guidewire AI experience covering the current AI-assisted state, AI agents,
-              aspirational agentic AI flow, AI-DLC use cases, multi-agent capabilities, and the June 2026
-              pilot adoption roadmap for COUNTRY/Pekin.
+              aspirational agentic AI flow, AI-DLC use cases, the AI Assisted Guidewire Code Analyzer,
+              multi-agent capabilities, and the June 2026 pilot adoption roadmap for COUNTRY/Pekin.
             </p>
             <div className="mt-6">
               <Button asChild className="bg-white text-[#07306F] hover:bg-white/90">
@@ -572,6 +858,8 @@ function GuidewireAiDetail() {
           </Card>
         </section>
       )}
+
+      {activeSection === "code-analyzer" && <GuidewireCodeAnalyzerSection />}
 
       {activeSection === "roadmap" && (
         <section className="space-y-5">
@@ -715,11 +1003,15 @@ export default function AiPlatforms({ platformSlug }) {
                     <Badge variant="outline" className="border-[#FABD00]/35 bg-[#FABD00]/10 text-[#9A6500]">
                       June 2026 roadmap
                     </Badge>
+                    <Badge variant="outline" className="border-[#056BFC]/25 bg-white text-[#055FE0]">
+                      Code Analyzer
+                    </Badge>
                   </div>
                   <h2 className="text-2xl font-bold tracking-tight">Guidewire AI-DLC Use Cases & Adoption Roadmap</h2>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
                     Explore the complete Guidewire-specific progression from AI-assisted delivery into AI agents,
-                    agentic AI, Multi Agent Framework capabilities, and the COUNTRY/Pekin pilot roadmap.
+                    agentic AI, the AI Assisted Guidewire Code Analyzer, Multi Agent Framework capabilities,
+                    and the COUNTRY/Pekin pilot roadmap.
                   </p>
                 </div>
               </div>

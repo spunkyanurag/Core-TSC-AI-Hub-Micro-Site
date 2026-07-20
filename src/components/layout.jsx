@@ -133,13 +133,13 @@ export function Layout({ children }) {
 
     const guidewireAiResult = {
       href: "/ai-platforms/guidewire",
-      label: "Guidewire AI-DLC Use Cases & Adoption Roadmap",
-      description: "AI-DLC progression, Guidewire use cases, multi-agent capabilities, and June 2026 adoption roadmap.",
+      label: "Guidewire AI-DLC, Code Analyzer & Adoption Roadmap",
+      description: "AI-DLC progression, Guidewire use cases, AI Assisted Guidewire Code Analyzer, multi-agent capabilities, and June 2026 adoption roadmap.",
     };
     const guidewireAiMatches = [
       guidewireAiResult.label,
       guidewireAiResult.description,
-      "AI For Core Platforms Guidewire AI-DLC AI Agents Agentic AI COUNTRY Pekin roadmap",
+      "AI For Core Platforms Guidewire AI-DLC AI Agents Agentic AI COUNTRY Pekin roadmap AI Assisted Guidewire Code Analyzer code review NPE exception handling mapper schema rating product model PR diff guardrails false positives operating model",
     ]
       .join(" ")
       .toLowerCase()
