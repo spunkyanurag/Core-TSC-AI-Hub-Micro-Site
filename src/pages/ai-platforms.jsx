@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from "wouter";
 import { motion, useInView } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ContentAccessDenied } from "@/components/content-access-denied";
 import { useAuth } from "@/auth";
-import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform } from "@/lib/content-access";
+import { CONTENT_ACCESS_ROLE, filterContentForUser, getContentAccessRoleForPlatform, userCanViewContent } from "@/lib/content-access";
 import {
   BotMessageSquare, Sparkles, Brain, Cpu, Zap, ArrowRight,
   FlaskConical, Layers, Shield, MessageSquare, ChevronRight,
-  CheckCircle2, Clock, Rocket,
+  CheckCircle2, Clock, Rocket, GitBranch, Workflow, TestTube2,
+  CloudCog, Code2, FileSearch, Network, ClipboardCheck, BarChart3,
+  Gauge, Target, Library, MonitorCheck, Boxes, ArrowLeft,
 } from "lucide-react";
 
 /* ── counter ─────────────────────────────────────────────────── */
@@ -108,13 +112,487 @@ const aiApproach = [
   { label: "Conversational Knowledge Base",  desc: "RAG-based chatbot over internal accelerator and asset library for instant lookup.", contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL },
 ];
 
+const guidewireAiRole = getContentAccessRoleForPlatform("Guidewire");
+
+const guidewireProgression = [
+  {
+    status: "Current State",
+    title: "AI Assisted & Generative AI",
+    color: "#D90000",
+    groups: [
+      {
+        title: "Requirement & Specs",
+        items: [
+          "AI converts workshop notes to user stories in minutes",
+          "Auto-generates acceptance criteria and edge cases",
+        ],
+      },
+      {
+        title: "Config & Development (Gosu & APD)",
+        items: [
+          "Gosu classes and PCF screens from design artifacts",
+          "Unit tests auto-generated and validated on save",
+          "AI-assisted product model config and APD build",
+          "Underwriting workflow generation and validation",
+        ],
+      },
+      {
+        title: "Integration & Cloud API",
+        items: [
+          "Java and deployment pipeline auto-generation",
+          "Guidewire Cloud API setup and REST client generation",
+          "Unit and deployment pipeline auto-generation",
+        ],
+      },
+      {
+        title: "Testing & Quality Assurance",
+        items: [
+          "Gosu unit tests auto-generated from specs",
+          "Coverage gaps flagged automatically on every save",
+        ],
+      },
+      {
+        title: "Knowledge & Onboarding",
+        items: ["Gosu patterns and domain glossary are shared AI context"],
+      },
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    status: "Days (TBD)",
+    title: "AI Agents",
+    color: "#056BFC",
+    groups: [
+      {
+        title: "AI Agents",
+        items: [
+          "Requirement Discovery Agent",
+          "Gosu Development & APD Config Agent",
+          "UI & Rule Configuration Agent",
+          "Test Automation Agent (Existing - Assurance TSC)",
+        ],
+      },
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    status: "Agentic AI (Aspirational)",
+    title: "Agentic AI (Multiagent Framework)",
+    color: "#22B922",
+    flow: [
+      "Requirements",
+      "Product Configuration Agent",
+      "Gosu Development Agent",
+      "Integration Development Agent",
+      "Test Automation Agent",
+      "Code Review Agent",
+      "Human Approval",
+      "Deployment",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+];
+
+const guidewireAiDlcColumns = [
+  {
+    title: "Requirement Analysis",
+    color: "#075BCD",
+    items: [
+      "User story",
+      "Requirement Optimization",
+      "Impact Analysis",
+      "User story creation",
+      "Requirement validation agent",
+      "Acceptance criteria",
+      "Traceability agent",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Architecture & Design",
+    color: "#056BFC",
+    items: [
+      "UI/UX Guide Creation",
+      "Solution Design",
+      "Integration Design Agent",
+      "Architecture Reverse Engineering",
+      "API Design & Impl Agent",
+      "Technical Debt",
+      "Security & Compliance Agent",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Development",
+    color: "#22B922",
+    items: [
+      "AI Agents",
+      "Code Generation",
+      "UI Dev (PCF) Agent",
+      "Code Refactoring",
+      "Rule Configuration Agent",
+      "Defect Resolution Agent",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Testing",
+    color: "#22B922",
+    items: [
+      "Test case Generation",
+      "Test Automation Agent",
+      "Automated Test Scripts",
+      "Test Data Generation Agent",
+      "Defect Analysis",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Deployment",
+    color: "#8B2CA6",
+    items: [
+      "AI Agents",
+      "Release notes",
+      "Release Planning Agent",
+      "Deploy validation",
+      "Monitoring Agent",
+      "Change control",
+      "CI/CD Pipeline Agent",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+];
+
+const guidewireMultiAgentCapabilities = [
+  "Requirement Traceability Agent",
+  "Architecture Governance Agents",
+  "Defect Tracking & Resolution Agent",
+  "End to End Integration Testing Agent",
+  "Production Deployment Readiness Agent",
+].map((label) => ({ label, contentAccessRole: guidewireAiRole }));
+
+const guidewireAdoptionRoadmap = [
+  {
+    title: "Assess & Prioritize",
+    timeline: "0-10 Days",
+    color: "#056BFC",
+    items: [
+      "Assess AI readiness by practice, create AI use case inventory, confirm AI agent flow for Guidewire, deploy on TSC sandbox, and identify AI-missing use cases within SDLC",
+      "Update AI use case inventory including SBT and VM offerings list",
+      "Identify design artifacts to implementation projects, with 2-3 projects for every solution architect",
+      "Identify 3-5 major Core TSC app AI use cases per project and project team, then add, modify, or delete by applicability",
+      "Project PMs and Tech Leads consume AI across the TSC inventory",
+      "Establish governance and adoption scorecard with Core TSC help",
+      "Baseline productivity metrics and track them diligently",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Pilot & Adopt",
+    timeline: "10-30 Days",
+    color: "#22B922",
+    items: [
+      "Deploy AI use cases across AI-DLC phases for TSC and rollout to country/project teams to validate project-specific prompt libraries for common use",
+      "Enable IntelliJ Copilot, Amazon Q, ChatGPT, Claude, and AI pilot for TSC and delivery projects, and engage with customer showcase POC",
+      "Establish weekly PM-Architect review, discuss impediments and how TSC can help resolve them, and ramp recurring cadence",
+      "Capture productivity gains and lessons learned, then establish feedback loop and continuous improvement mechanism",
+      "Publish initial adoption scores for delivery projects",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+  {
+    title: "Scale & Institutionalize",
+    timeline: "30-45 Days & Beyond",
+    color: "#056BFC",
+    items: [
+      "Expand successful AI use cases across practice delivery projects and engage with customers through demos using business case and ROI",
+      "Create reusable prompt libraries and share across projects and practice",
+      "Identify and establish Agentic AI pilots rollout within Core TSC and then delivery programs based on customer adoption and appetite",
+      "Roll out AI-DLC best practices and learnings",
+      "Publish adoption dashboards and success stories",
+    ],
+    contentAccessRole: guidewireAiRole,
+  },
+];
+
+const guidewireAiStats = [
+  { label: "AI-DLC phases", value: guidewireAiDlcColumns.length, suffix: "", icon: Workflow },
+  {
+    label: "AI-DLC use cases",
+    value: guidewireAiDlcColumns.reduce((sum, column) => sum + column.items.length, 0),
+    suffix: "",
+    icon: Layers,
+  },
+  { label: "Multi-agent capabilities", value: guidewireMultiAgentCapabilities.length, suffix: "", icon: BotMessageSquare },
+  { label: "Adoption runway", value: 45, suffix: " days", icon: Gauge },
+];
+
+const guidewireAiSearchItems = [
+  "AI-DLC Use Cases Progression for Guidewire Platform",
+  "AI Use Cases across AI-DLC",
+  "AI Adoption Roadmap (Pilot with COUNTRY/Pekin) - June 2026",
+  ...guidewireAiDlcColumns.flatMap((column) => column.items),
+  ...guidewireMultiAgentCapabilities.map((item) => item.label),
+  ...guidewireAdoptionRoadmap.flatMap((phase) => phase.items),
+];
+
 const statusIcon = (s) => {
   if (s === "completed")   return <CheckCircle2 className="w-4 h-4 text-[#3FD534]" />;
   if (s === "in-progress") return <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}><Clock className="w-4 h-4 text-[#FABD00]" /></motion.div>;
   return <Rocket className="w-4 h-4 text-[#056BFC]" />;
 };
 
-export default function AiPlatforms() {
+function BulletList({ items = [], color = "#056BFC", compact = false }) {
+  return (
+    <ul className={compact ? "space-y-2" : "space-y-3"}>
+      {items.map((item) => (
+        <li key={item} className="flex gap-2 text-sm leading-6 text-muted-foreground">
+          <span className="mt-2 h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function GuidewireProgressionCard({ stage }) {
+  return (
+    <Card className="h-full overflow-hidden rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="px-4 py-2 text-center text-sm font-bold text-white" style={{ backgroundColor: stage.color }}>
+        {stage.status}
+      </div>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg" style={{ color: stage.color }}>{stage.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {stage.groups?.map((group) => (
+          <div key={group.title}>
+            <p className="mb-2 text-sm font-semibold text-foreground">{group.title}</p>
+            <BulletList items={group.items} color={stage.color} compact />
+          </div>
+        ))}
+        {stage.flow && (
+          <div className="space-y-2">
+            {stage.flow.map((step, index) => (
+              <div key={step} className="flex items-center gap-3 rounded-lg border bg-muted/20 px-3 py-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: stage.color }}>
+                  {index + 1}
+                </span>
+                <span className="text-sm font-medium text-foreground">{step}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GuidewireDlcColumn({ column }) {
+  return (
+    <Card className="h-full overflow-hidden rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="px-3 py-2 text-center text-xs font-bold text-white" style={{ backgroundColor: column.color }}>
+        {column.title}
+      </div>
+      <CardContent className="grid gap-2 p-3">
+        {column.items.map((item) => (
+          <div key={item} className="rounded-md border border-[#056BFC]/20 bg-[#F8FBFF] px-3 py-2 text-center text-xs font-semibold leading-5 text-[#07306F] transition hover:border-[#056BFC]/45 hover:bg-white dark:bg-card dark:text-white">
+            {item}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GuidewireRoadmapPhase({ phase }) {
+  return (
+    <Card className="h-full overflow-hidden rounded-lg border-border/70 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="px-4 py-3 text-center text-white" style={{ backgroundColor: phase.color }}>
+        <p className="text-xs font-bold uppercase tracking-[0.12em]">{phase.timeline}</p>
+        <p className="mt-1 text-sm font-semibold">{phase.title}</p>
+      </div>
+      <CardContent className="space-y-3 p-4">
+        {phase.items.map((item, index) => (
+          <div key={item} className="rounded-lg border bg-muted/20 p-3 transition hover:border-[#056BFC]/35 hover:bg-[#056BFC]/5">
+            <div className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: phase.color }}>
+                {index + 1}
+              </span>
+              <p className="text-xs font-medium leading-5 text-muted-foreground">{item}</p>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GuidewireAiDetail() {
+  const { user } = useAuth();
+  const [activeSection, setActiveSection] = useState("progression");
+
+  if (!userCanViewContent(user, CONTENT_ACCESS_ROLE.GUIDEWIRE)) {
+    return <ContentAccessDenied contentAccessRole={CONTENT_ACCESS_ROLE.GUIDEWIRE} />;
+  }
+
+  const sectionTabs = [
+    { id: "progression", label: "Progression", icon: GitBranch },
+    { id: "use-cases", label: "AI-DLC Use Cases", icon: Boxes },
+    { id: "roadmap", label: "Adoption Roadmap", icon: Target },
+  ];
+
+  return (
+    <div className="space-y-8">
+      <section className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <Link href="/ai-platforms" className="hover:text-[#056BFC]">AI For Core Platforms</Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="font-medium text-foreground">Guidewire</span>
+        </div>
+      </section>
+
+      <motion.section
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55 }}
+        className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#056BFC] via-[#0751BD] to-[#07306F] p-7 text-white shadow-[0_28px_70px_rgba(5,107,252,0.24)]"
+      >
+        <div className="grid gap-7 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+          <div>
+            <Badge className="border border-white/20 bg-white/15 text-white">
+              Guidewire
+            </Badge>
+            <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-5xl">
+              AI-DLC for Guidewire Platform
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-8 text-white/78">
+              A consolidated Guidewire AI experience covering the current AI-assisted state, AI agents,
+              aspirational agentic AI flow, AI-DLC use cases, multi-agent capabilities, and the June 2026
+              pilot adoption roadmap for COUNTRY/Pekin.
+            </p>
+            <div className="mt-6">
+              <Button asChild className="bg-white text-[#07306F] hover:bg-white/90">
+                <Link href="/ai-platforms">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to AI Overview
+                </Link>
+              </Button>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {guidewireAiStats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <Card key={stat.label} className="border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md">
+                  <CardContent className="p-4">
+                    <Icon className="mb-4 h-6 w-6 text-[#FABD00]" />
+                    <p className="text-3xl font-bold">
+                      <Counter to={stat.value} suffix={stat.suffix} />
+                    </p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/65">{stat.label}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </motion.section>
+
+      <section className="rounded-lg border bg-card p-3 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          {sectionTabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <Button
+                key={tab.id}
+                type="button"
+                variant={activeSection === tab.id ? "default" : "outline"}
+                className="gap-2"
+                onClick={() => setActiveSection(tab.id)}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </Button>
+            );
+          })}
+        </div>
+      </section>
+
+      {activeSection === "progression" && (
+        <section className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">AI-DLC Use Cases Progression for Guidewire Platform</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Progression from AI-assisted and generative AI use cases into AI agents and aspirational agentic AI.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            {guidewireProgression.map((stage) => (
+              <GuidewireProgressionCard key={stage.status} stage={stage} />
+            ))}
+          </div>
+          <Card className="border-[#056BFC]/20 bg-[#056BFC]/5">
+            <CardContent className="flex flex-col gap-3 p-4 text-sm font-semibold text-[#055FE0] sm:flex-row sm:items-center">
+              <Sparkles className="h-5 w-5" />
+              Progression from AI Assisted & Generative AI use cases into AI Agents and Agentic AI use cases related to GW AI-DLC.
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {activeSection === "use-cases" && (
+        <section className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">AI Use Cases across AI-DLC</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Guidewire use cases organized by AI-DLC phase, including the Multi Agent Framework capabilities.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {guidewireAiDlcColumns.map((column) => (
+              <GuidewireDlcColumn key={column.title} column={column} />
+            ))}
+          </div>
+          <Card className="border-[#303030]/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Network className="h-5 w-5 text-[#056BFC]" />
+                Multi Agent Framework
+              </CardTitle>
+              <CardDescription>Artificial and human contribution calibrated at 50%.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              {guidewireMultiAgentCapabilities.map((capability) => (
+                <div key={capability.label} className="rounded-lg border border-[#8B2CA6]/25 bg-[#8B2CA6]/5 p-4 text-center text-sm font-semibold text-[#303030] transition hover:-translate-y-1 hover:bg-white hover:shadow-md dark:text-white">
+                  {capability.label}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {activeSection === "roadmap" && (
+        <section className="space-y-5">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">AI Adoption Roadmap (Pilot with COUNTRY/Pekin) - June 2026</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Adoption plan from readiness assessment through pilot execution and institutional scaling.
+            </p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            {guidewireAdoptionRoadmap.map((phase) => (
+              <GuidewireRoadmapPhase key={phase.title} phase={phase} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+export default function AiPlatforms({ platformSlug }) {
   const { user } = useAuth();
   const visibleRoadmap = filterContentForUser(aiRoadmap, user);
   const visibleAiOfferings = filterContentForUser(aiOfferings, user);
@@ -123,6 +601,15 @@ export default function AiPlatforms() {
   const platformsCovered = new Set(
     visibleAiOfferings.map((offering) => offering.contentAccessRole)
   ).size;
+  const canViewGuidewireAi = userCanViewContent(user, CONTENT_ACCESS_ROLE.GUIDEWIRE);
+  const visibleGuidewireAiUseCaseCount = canViewGuidewireAi
+    ? guidewireAiStats.find((stat) => stat.label === "AI-DLC use cases")?.value || 0
+    : 0;
+  const visibleMultiAgentCount = canViewGuidewireAi ? guidewireMultiAgentCapabilities.length : 0;
+
+  if (platformSlug === "guidewire") {
+    return <GuidewireAiDetail />;
+  }
 
   return (
     <div className="space-y-8">
@@ -184,10 +671,10 @@ export default function AiPlatforms() {
             variants={container} initial="hidden" animate="show"
           >
             {[
-              { label: "AI Use Cases",      value: String(visibleAiOfferings.length) },
+              { label: "AI Use Cases",      value: String(visibleAiOfferings.length + visibleGuidewireAiUseCaseCount) },
               { label: "Demo Ready",        value: String(demoReadyCount) },
               { label: "Platforms Covered", value: String(platformsCovered) },
-              { label: "Effort Saved",      value: "~60%" },
+              { label: "Agent Capabilities", value: String(visibleMultiAgentCount) },
             ].map((s) => (
               <motion.div
                 key={s.label}
@@ -204,6 +691,49 @@ export default function AiPlatforms() {
       </motion.section>
 
       {/* ── ROADMAP ───────────────────────────────────────────── */}
+      {canViewGuidewireAi && (
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.45 }}
+        >
+          <Card className="overflow-hidden rounded-lg border-[#056BFC]/20 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+            <CardContent className="grid gap-5 p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#056BFC]/10 text-[#056BFC]">
+                  <img src="/assets/guidewire.svg" alt="Guidewire logo" className="h-9 w-9 object-contain" />
+                </div>
+                <div>
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="border-[#056BFC]/25 bg-[#056BFC]/10 text-[#055FE0]">
+                      Guidewire
+                    </Badge>
+                    <Badge variant="outline" className="border-[#3FD534]/25 bg-[#3FD534]/10 text-[#18772A]">
+                      {visibleGuidewireAiUseCaseCount} AI-DLC use cases
+                    </Badge>
+                    <Badge variant="outline" className="border-[#FABD00]/35 bg-[#FABD00]/10 text-[#9A6500]">
+                      June 2026 roadmap
+                    </Badge>
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight">Guidewire AI-DLC Use Cases & Adoption Roadmap</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                    Explore the complete Guidewire-specific progression from AI-assisted delivery into AI agents,
+                    agentic AI, Multi Agent Framework capabilities, and the COUNTRY/Pekin pilot roadmap.
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="w-full lg:w-auto">
+                <Link href="/ai-platforms/guidewire">
+                  Open Guidewire
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.section>
+      )}
+
       <div>
         <motion.h2
           className="text-xl font-bold tracking-tight mb-4"

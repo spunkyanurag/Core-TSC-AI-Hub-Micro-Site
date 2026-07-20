@@ -102,6 +102,32 @@ export const activities = [
 // independently of its presentation.
 export const latestUpdates = [
   {
+    id: "valuemomentum-analyst-recognition",
+    eyebrow: "Analyst Recognition",
+    date: "2025-2026",
+    title: "ValueMomentum recognized as a P&C insurance leader by industry analysts",
+    description:
+      "Everest Group and ISG recognition reinforces our exclusive P&C focus, delivery scale, and proven Guidewire leadership across insurance transformation programs.",
+    cta: "Explore innovation",
+    href: "/innovation/guidewire",
+    accent: "#3FD534",
+    secondaryAccent: "#FABD00",
+    background: "linear-gradient(135deg, #056BFC 0%, #0751BD 48%, #07306F 100%)",
+    variant: "analyst-recognition",
+    metrics: [
+      { value: "25+", label: "Years in business" },
+      { value: "100+", label: "Insurers served" },
+      { value: "4000+", label: "Insurance-focused experts" },
+      { value: "8", label: "Delivery centers" },
+    ],
+    recognitions: [
+      "Everest Group PEAK Matrix Leader and Star Performer for P&C Insurance IT Services",
+      "Guidewire Services PEAK Matrix Star Performer in 2026",
+      "ISG Provider Lens Product Challenger for Digital Engineering and Managed Services",
+    ],
+    contentAccessRole: CONTENT_ACCESS_ROLE.GENERAL,
+  },
+  {
     id: "genai-underwriting",
     eyebrow: "POC Spotlight",
     date: "05 Jun 2026",

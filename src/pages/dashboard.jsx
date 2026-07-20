@@ -79,7 +79,64 @@ const fadeLeft = {
   show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
+function AnalystRecognitionPanel({ update }) {
+  const recognitions = update.recognitions || [];
+  const recognitionBadges = ["Leader", "Star Performer", "Product Challenger", "Delivery Scale"];
+
+  return (
+    <div className="flex min-h-0 flex-col rounded-lg border border-[#B7D4FF] bg-white p-4 text-[#07306F] shadow-2xl sm:p-5">
+      <motion.div
+        className="flex min-h-0 flex-1 flex-col"
+        animate={{ y: [-4, 4, -4] }}
+        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <div className="mb-3 flex justify-end border-l-2 border-[#056BFC] pl-4">
+          <img src="/assets/logo-dark.png" alt="ValueMomentum" className="h-7 w-auto object-contain opacity-80" />
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#056BFC]">Industry Analysts</p>
+            <p className="mt-1 text-lg font-bold leading-tight text-[#07306F]">P&C insurance leadership</p>
+          </div>
+          <div className="grid h-12 w-12 place-items-center rounded-lg bg-[#3FD534]/15 text-[#168B17]">
+            <Award className="h-6 w-6" />
+          </div>
+        </div>
+
+        <div className="mt-4 grid flex-1 content-start gap-2.5">
+          {recognitions.slice(0, 3).map((recognition, index) => (
+            <div key={recognition} className="flex min-h-[54px] items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+              <span
+                className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: index === 1 ? "#3FD534" : index === 2 ? "#FABD00" : "#056BFC" }}
+              />
+              <p className="text-[11px] font-semibold leading-5 text-slate-700">{recognition}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4">
+          {recognitionBadges.map((badge, index) => (
+            <span
+              key={badge}
+              className="min-h-8 rounded-full px-3 py-2 text-center text-[9px] font-bold uppercase tracking-[0.08em] shadow-sm"
+              style={{ backgroundColor: index === 1 ? "#3FD534" : index === 2 ? "#FABD00" : "#056BFC", color: index === 2 ? "#07306F" : "#fff" }}
+            >
+              {badge}
+            </span>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function UpdateArtwork({ update }) {
+  if (update.variant === "analyst-recognition") {
+    return null;
+  }
+
   return (
     <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[43%] overflow-hidden md:block" aria-hidden="true">
       <div className="absolute inset-0 bg-[#101f5a]/35 [clip-path:polygon(38%_0,100%_0,100%_100%,0_100%)]" />
@@ -126,6 +183,7 @@ function TscUpdates() {
   const total = visibleUpdates.length;
   const safeActiveIndex = total > 0 ? Math.min(activeIndex, total - 1) : 0;
   const update = visibleUpdates[safeActiveIndex];
+  const isAnalystSlide = update?.variant === "analyst-recognition";
 
   const showSlide = (nextIndex, nextDirection) => {
     if (!total) return;
@@ -197,7 +255,8 @@ function TscUpdates() {
       </div>
 
       <div
-        className="relative min-h-[360px] overflow-hidden rounded-[1.85rem] bg-gradient-to-br from-[#6345cf] via-[#353f9c] to-[#101e56] shadow-[0_28px_70px_rgba(20,36,92,0.22)] md:min-h-[410px]"
+        className="relative h-[760px] overflow-hidden rounded-[1.85rem] bg-gradient-to-br from-[#6345cf] via-[#353f9c] to-[#101e56] shadow-[0_28px_70px_rgba(20,36,92,0.22)] sm:h-[650px] md:h-[560px] lg:h-[540px]"
+        style={update.background ? { background: update.background } : undefined}
         role="region"
         aria-roledescription="carousel"
         aria-label="TSC updates carousel"
@@ -214,31 +273,55 @@ function TscUpdates() {
             animate="center"
             exit={reduceMotion ? undefined : "exit"}
             transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex min-h-[360px] w-full flex-col justify-center px-7 py-10 text-white sm:px-12 md:min-h-[410px] md:w-[64%] md:px-14"
+            className={`relative z-10 h-full w-full px-7 py-7 text-white sm:px-12 md:px-14 ${
+              isAnalystSlide
+                ? "grid min-h-0 content-center gap-6 md:grid-cols-[minmax(0,1fr)_minmax(350px,0.46fr)] md:items-center"
+                : "flex flex-col justify-center md:w-[64%]"
+            }`}
             aria-roledescription="slide"
             aria-label={`${safeActiveIndex + 1} of ${total}`}
           >
-            <div className="mb-6 flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
-                {update.eyebrow}
-              </span>
-              <time className="text-sm font-medium text-white/70">{update.date}</time>
+            <div className="min-w-0">
+              <div className="mb-5 flex flex-wrap items-center gap-3">
+                <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
+                  {update.eyebrow}
+                </span>
+                <time className="text-sm font-medium text-white/70">{update.date}</time>
+              </div>
+              <h3 className="max-w-3xl text-3xl font-bold leading-[1.06] tracking-[0] sm:text-4xl lg:text-[2.45rem]">
+                {update.title}
+              </h3>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
+                {update.description}
+              </p>
+              {update.metrics && (
+                <div className="mt-5 grid max-w-2xl grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  {update.metrics.map((metric, index) => (
+                    <div
+                      key={metric.label}
+                      className="min-h-[78px] rounded-lg border border-white/20 bg-white/12 px-3 py-2.5 shadow-lg backdrop-blur-md"
+                    >
+                      <div
+                        className="mb-2 h-1 w-8 rounded-full"
+                        style={{ backgroundColor: index % 3 === 0 ? "#3FD534" : index % 3 === 1 ? "#FABD00" : "#056BFC" }}
+                      />
+                      <p className="text-xl font-bold leading-none text-white sm:text-2xl">{metric.value}</p>
+                      <p className="mt-1 text-[11px] font-semibold leading-4 text-white/72">{metric.label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-6">
+                <Link
+                  href={update.href}
+                  className="group inline-flex min-h-11 items-center gap-4 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#111936] shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#353f9c]"
+                >
+                  {update.cta}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
             </div>
-            <h3 className="max-w-3xl text-3xl font-bold leading-[1.06] tracking-[-0.035em] sm:text-4xl lg:text-[2.75rem]">
-              {update.title}
-            </h3>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
-              {update.description}
-            </p>
-            <div className="mt-8">
-              <Link
-                href={update.href}
-                className="group inline-flex min-h-11 items-center gap-4 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#111936] shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#353f9c]"
-              >
-                {update.cta}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
+            {isAnalystSlide && <AnalystRecognitionPanel update={update} />}
           </motion.article>
         </AnimatePresence>
       </div>

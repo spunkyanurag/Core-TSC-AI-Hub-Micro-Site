@@ -73,6 +73,9 @@ function Router() {
       </Route>
       <Route path="/earnix-resources" component={EarnixResources} />
       <Route path="/earnix-demos" component={EarnixDemos} />
+      <Route path="/ai-platforms/:platformSlug">
+        {(params) => <AiPlatforms platformSlug={params.platformSlug} />}
+      </Route>
       <Route path="/ai-platforms" component={AiPlatforms} />
       <Route path="/partnerships" component={Partnerships} />
       <Route path="/collaboration" component={Collaboration} />

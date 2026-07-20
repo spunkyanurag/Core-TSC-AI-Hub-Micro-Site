@@ -61,6 +61,7 @@ const ROUTE_LABELS = {
   "/home": "Home",
   "/executive-dashboard": "Home",
   "/competencies": "Competency Center",
+  "/ai-platforms/guidewire": "Guidewire AI-DLC",
   "/earnix-resources": "Earnix Resources",
   "/earnix-demos": "Earnix Demo Library",
   "/innovation/guidewire": "Guidewire Innovation",
@@ -130,7 +131,21 @@ export function Layout({ children }) {
       user
     );
 
-    return visibleSolutions
+    const guidewireAiResult = {
+      href: "/ai-platforms/guidewire",
+      label: "Guidewire AI-DLC Use Cases & Adoption Roadmap",
+      description: "AI-DLC progression, Guidewire use cases, multi-agent capabilities, and June 2026 adoption roadmap.",
+    };
+    const guidewireAiMatches = [
+      guidewireAiResult.label,
+      guidewireAiResult.description,
+      "AI For Core Platforms Guidewire AI-DLC AI Agents Agentic AI COUNTRY Pekin roadmap",
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(normalizedQuery);
+
+    const solutionResults = visibleSolutions
       .filter((solution) =>
         [
           solution.title,
@@ -149,6 +164,11 @@ export function Layout({ children }) {
         label: solution.title,
         description: solution.subtitle || solution.summary,
       }));
+
+    return [
+      ...(guidewireAiMatches ? [guidewireAiResult] : []),
+      ...solutionResults,
+    ].slice(0, 5);
   }, [portalSearch, user]);
 
   function handlePortalSearchKeyDown(event) {
