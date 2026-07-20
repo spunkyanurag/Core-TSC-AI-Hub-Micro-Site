@@ -559,7 +559,7 @@ function PlatformCard({ platform }) {
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button asChild size="sm" className="flex-1">
               <Link href={platformRoute(platform)}>
-                Explore Platform
+                View Platform
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
